@@ -36,3 +36,7 @@ Install Edo Desktop on **both** computers. Each can host its own shared folder, 
 `PC A (Edo Desktop / server) ← Wi-Fi/Ethernet → PC B (browser)`
 
 Files stay on the local network unless you deliberately share or back them up elsewhere.
+
+## Manage your files on the host PC
+
+Edo Desktop **v1.0** includes a **Your files** sidebar tab. Use it to browse and search the shared folder, import files, create folders, rename, copy/move and delete items. These are local file-management actions on the host PC. Deleted items may not be recoverable.
