@@ -193,7 +193,7 @@ public final class LanServer implements AutoCloseable {
             Map<String,String> query=parseQuery(target.indexOf('?')<0?"":target.substring(target.indexOf('?')+1));
             // Safe, public reachability probe. Never disclose PIN, sessions, files or secrets.
             if(method.equals("GET") && rawPath.equals("/api/health")) {
-                reply(out,200,"application/json","{\"app\":\"Edo\",\"version\":\"5.3\",\"ready\":true,\"transport\":"+json(scheme())+",\"pairingRequired\":true}");return;
+                reply(out,200,"application/json","{\"app\":\"Edo\",\"version\":\"1.0\",\"ready\":true,\"transport\":"+json(scheme())+",\"pairingRequired\":true}");return;
             }
             if((method.equals("GET") || method.equals("HEAD")) && (rawPath.equals("/")||rawPath.equals("/index.html"))) {
                 try(InputStream page=homePage.open()) {
@@ -256,7 +256,7 @@ public final class LanServer implements AutoCloseable {
             if(method.equals("GET")&&rawPath.equals("/api/diagnostics")) {
                 List<Entry> entries=repository.list();
                 List<String> folderList=repository.folders();
-                StringBuilder info=new StringBuilder("{\"service\":\"Edo\",\"version\":\"5.3\",\"port\":").append(port())
+                StringBuilder info=new StringBuilder("{\"service\":\"Edo\",\"version\":\"1.0\",\"port\":").append(port())
                     .append(",\"maxChunk\":").append(ResumeStore.MAX_CHUNK)
                     .append(",\"encrypted\":").append(tlsEnabled).append(",\"active\":").append(active.get())
                     .append(",\"bytes\":").append(transferred.get())

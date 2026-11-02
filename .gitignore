@@ -1,0 +1,25 @@
+# Build outputs
+.gradle/
+.build-tools/
+local.properties
+**/build/
+desktop/dist/
+desktop/installers/
+*.apk
+*.aab
+*.jar
+*.class
+*.exe
+
+# Credentials / local files
+*.jks
+*.keystore
+*.p12
+*.pem
+.env
+.env.*
+*.log
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/

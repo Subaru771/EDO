@@ -1,4 +1,4 @@
-# Edo v4.0 security notes
+# Edo v1.0 security notes
 
 Edo is not meant to run on public Wi-Fi, a public IP, or an exposed router port. The server refuses non-LAN source addresses but routers and network configurations vary. Never port-forward the Edo port or UDP discovery port.
 
@@ -15,7 +15,7 @@ Edo is not meant to run on public Wi-Fi, a public IP, or an exposed router port.
 **Unverified:** Android TV/AndroidKeyStore behavior on device, iOS signed-build behavior, and physical-network security review. Do not treat this project as a production-hardened secure file server without further audits.
 
 
-## v5 defaults and diagnostics
+## v1.0 defaults and diagnostics
 
 On fresh Android installations, TV approval is enabled by default for new pairing attempts. Existing users retain their previous stored preference. The Lite Receive screen also includes pending approval actions. The Android diagnostics page stores only the most recent uncaught exception in private app files and never uploads it automatically; users can explicitly share a report.
 

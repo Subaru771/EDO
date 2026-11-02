@@ -7,5 +7,4 @@ cp app/src/main/assets/index.html desktop/build/classes/index.html
 cp desktop/resources/edo-icon.png desktop/build/classes/edo-icon.png
 printf 'Main-Class: com.dropwave.desktop.DesktopMain\nImplementation-Title: Edo Desktop\nImplementation-Version: 1.0\n' > desktop/build/MANIFEST.MF
 jar cfm desktop/dist/Edo-Desktop.jar desktop/build/MANIFEST.MF -C desktop/build/classes .
-cp desktop/Edo-Windows.vbs desktop/dist/Edo-Windows.vbs
 echo "Created desktop/dist/Edo-Desktop.jar"

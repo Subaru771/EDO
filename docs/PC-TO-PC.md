@@ -6,7 +6,7 @@ Run **Edo Desktop v1.0** on one Windows, macOS or Linux computer with **Java 21+
 
 ### On Computer A (receiving / sharing PC)
 1. Both PCs should be on the same trusted LAN (Wi-Fi or Ethernet). Disable guest Wi-Fi isolation if it blocks device-to-device connections.
-2. Download and extract [`Edo-Desktop-v1.0-Windows.zip`](https://github.com/Subaru771/EDO/releases/download/v5.4.2/Edo-Desktop-v1.0-Windows.zip). With Java 21+ installed, on Windows open `Start-Edo-Windows.vbs` (or `Start-Edo-Windows.cmd` for diagnostics). On macOS/Linux run `java -jar Edo-Desktop.jar`.
+2. Download and extract [Edo Desktop v1.0](https://github.com/Subaru771/EDO/releases). With Java 21+ installed, on Windows open `Start-Edo-Windows.vbs` (or `Start-Edo-Windows.cmd` for diagnostics). On macOS/Linux run `java -jar Edo-Desktop.jar`.
 3. Choose a folder you want to share. **Only share files you're comfortable letting paired devices access.**
 4. Click **Start sharing**. Copy the complete local address printed in Edo (for example, `http://192.168.1.20:8765`). The address varies per network.
 5. Find the six-digit pairing PIN in Edo Desktop. If device approval is enabled, keep this window available.

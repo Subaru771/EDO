@@ -1,1 +1,0 @@
-Upload the contents of this `website/` folder to a public HTTPS host (e.g. Cloudflare Pages). Before publishing, replace `SUPPORT_EMAIL_REQUIRED_BEFORE_PUBLISHING` in privacy.html with a real support email. The landing page intentionally has no APK link until a signed verified release exists. After publishing, copy the public privacy URL into Google Play Console.

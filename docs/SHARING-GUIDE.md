@@ -15,4 +15,4 @@ Both devices normally must be reachable on the same trusted LAN. The computer or
 - **Server/receiver:** The device running the Edo app (TV APK or Java Desktop). It shows the address and six-digit PIN and holds the shared folder.
 - **Client:** Another device using its browser, with no installation. Clients can **upload to the server** and **download from the server**.
 
-For the exact two-PC process, see [PC-TO-PC.md](PC-TO-PC.md). For encryption, see [SECURE-CONNECTION-GUIDE.md](../SECURE-CONNECTION-GUIDE.md).
+For the exact two-PC process, see [PC-TO-PC.md](PC-TO-PC.md). For encryption, see [SECURE-CONNECTION-GUIDE.md](SECURE-CONNECTION-GUIDE.md).

@@ -8,7 +8,7 @@ This is a **developer source review**, not an independent penetration test, form
 - LAN-only incoming address checks and optional HTTPS / HTTPS-only WebDAV.
 - Desktop file access restricted to the user-selected sharing folder.
 
-## Source hardening after v5.4.2
+## Source hardening included in v1.0
 - API requests with `Sec-Fetch-Site: cross-site` are rejected by the server.
 - Fresh TV installs default to requiring approval for new devices and persist that setting; existing user choices are retained.
 - The QR code embeds pairing credentials; treat it like a password.
@@ -16,7 +16,7 @@ This is a **developer source review**, not an independent penetration test, form
 ## Remaining risks
 - HTTP remains unencrypted; a compromised LAN can observe transfers and credentials.
 - Six-digit PINs are not cryptographic encryption.
-- The published Android APK predates these source changes; a new signed APK has to be tested and published.
+- A new signed v1.0 Android APK must be built and hardware-tested before public distribution.
 - The request parser, WebDAV implementation, session persistence, symlink behavior and browser CSP need independent review.
 - Edo should never be exposed through port forwarding to the public internet.
 
