@@ -6,9 +6,9 @@
 | PC + Google TV | TV app | PC browser | Open Edo on TV; scan QR or enter the TV's address |
 | iPhone + Google TV | TV app | Safari | Scan QR or enter TV address, then pair |
 | Android phone + PC | Desktop app on PC | Android browser | Visit PC's Edo URL and pair |
-| Mac/Linux + Windows | Edo Desktop on the host running Java 17+ | Browser | Visit the host's LAN address and pair |
+| Mac/Linux + Windows | Edo Desktop on the host running Java 21+ | Browser | Visit the host's LAN address and pair |
 
-**No TV required for PC-to-PC or phone-to-PC transfers.** Both sides normally must be reachable on the same trusted LAN. The computer or TV running Edo must remain awake and online.
+Both devices normally must be reachable on the same trusted LAN. The computer or TV running Edo must remain awake and online.
 
 ## Every transfer has two roles
 
