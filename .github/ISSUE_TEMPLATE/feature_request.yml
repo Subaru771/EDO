@@ -1,0 +1,40 @@
+name: Feature request
+description: Suggest a practical improvement to Edo
+title: "[Feature] "
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Edo is local-first and supports a browser as the receiving/sending client. Please describe a specific problem and your preferred behavior.
+  - type: dropdown
+    id: platform
+    attributes:
+      label: Platform
+      options:
+        - Windows Desktop
+        - Google TV / Android TV
+        - Browser client
+        - All platforms
+    validations:
+      required: true
+  - type: textarea
+    id: problem
+    attributes:
+      label: What problem would this solve?
+      placeholder: "I want to..."
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed solution
+      description: Describe the behavior rather than just a design.
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives or tradeoffs (optional)
+    validations:
+      required: false
