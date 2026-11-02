@@ -14,7 +14,7 @@ If SDK setup fails, build through `.github/workflows/android-apk.yml` instead. A
 
 ## Windows / desktop
 
-Compile `bash desktop/build.sh` on a JDK 17+ system. Run `java -jar desktop/dist/Edo-Desktop.jar` or use `desktop/dist/Edo-Windows.vbs` on Windows to launch silently via javaw. The GitHub Windows installer workflow uses jpackage to bundle a runtime; the `.exe` is not included until CI produces it.
+**Edo Desktop v1.0 requires JDK/Java 21+.** Compile with `bash desktop/build.sh` from the repository root. Run `java -jar desktop/dist/Edo-Desktop.jar`. On Windows, download the [v1.0 ZIP](https://github.com/Subaru771/EDO/releases/download/v5.4.2/Edo-Desktop-v1.0-Windows.zip), extract it, then run `Start-Edo-Windows.vbs`; use `Start-Edo-Windows.cmd` to see errors. GitHub's `.github/workflows/desktop-windows.yml` also builds a portable `Edo.exe` preview with its own runtime, available as a workflow artifact after successful CI. Android builds still use Java 17 and their separate Gradle workflow.
 
 ## iPhone / iPad
 
