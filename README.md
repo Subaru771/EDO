@@ -4,7 +4,7 @@
 
 Transfer files across your local network without cloud storage, subscriptions, or an account.
 
-**A TV is NOT required for PC-to-PC or phone-to-PC transfers.**
+
 
 [**Download Edo v5.4.2**](https://github.com/Subaru771/EDO/releases/latest) · [Report an Issue](https://github.com/Subaru771/EDO/issues)
 
