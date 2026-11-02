@@ -1,5 +1,5 @@
 
-name: Build Edo TV APK
+name: Build Edo v1.0 TV debug APK
 
 on:
   push:
@@ -56,7 +56,7 @@ jobs:
       - name: Upload Edo APK
         uses: actions/upload-artifact@v4
         with:
-          name: Edo-v5.4.2-Android-APK
+          name: Edo-v1.0-Android-APK
           path: app/build/outputs/apk/debug/app-debug.apk
           if-no-files-found: error
           retention-days: 30

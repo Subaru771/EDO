@@ -1,4 +1,4 @@
-# Edo v4.0 Windows SDK/bootstrap builder
+# Edo v1.0 Windows SDK/bootstrap builder
 # Run by double-clicking BUILD-APK-WINDOWS.cmd from the project root.
 $ErrorActionPreference = 'Stop'
 $ProgressPreference = 'SilentlyContinue'
@@ -20,7 +20,7 @@ function Run-Checked([string]$exe, [string[]]$toolArgs, [string]$description) {
   if ($LASTEXITCODE -ne 0) { Fail "$description failed (exit code $LASTEXITCODE)." }
 }
 
-Write-Host "`nEdo v5.4 - Android TV / Phone APK Builder" -ForegroundColor Green
+Write-Host "`nEdo v1.0 - Android TV / Phone APK Builder" -ForegroundColor Green
 Write-Host "This builder installs missing Android SDK components automatically."
 $java = Get-Command java -ErrorAction SilentlyContinue
 $javac = Get-Command javac -ErrorAction SilentlyContinue

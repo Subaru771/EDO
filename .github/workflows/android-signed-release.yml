@@ -1,0 +1,97 @@
+name: Build signed Edo v1.0 Android TV release
+
+on:
+  workflow_dispatch:
+    inputs:
+      publish_release:
+        description: "Publish Edo v1.0 after testing the signed APK on a real TV"
+        type: boolean
+        default: false
+      confirmed_hardware_tested:
+        description: "I have tested this signed build on a physical Google TV / Android TV"
+        type: boolean
+        default: false
+
+permissions:
+  contents: write
+
+jobs:
+  android-signed:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate signing credentials
+        env:
+          KEY_B64: ${{ secrets.EDO_KEY_BASE64 }}
+          STORE_PASS: ${{ secrets.EDO_STORE_PASS }}
+          KEY_ALIAS: ${{ secrets.EDO_KEY_ALIAS }}
+          KEY_PASS: ${{ secrets.EDO_KEY_PASS }}
+        run: |
+          for value in "$KEY_B64" "$STORE_PASS" "$KEY_ALIAS" "$KEY_PASS"; do
+            if [ -z "$value" ]; then
+              echo "::error::Missing EDO_KEY_BASE64, EDO_STORE_PASS, EDO_KEY_ALIAS, or EDO_KEY_PASS repository secret."
+              exit 1
+            fi
+          done
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: android-actions/setup-android@v4
+        with:
+          packages: 'platform-tools'
+      - name: Install Android SDK
+        run: sdkmanager --install "platforms;android-35" "build-tools;35.0.0"
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.9'
+      - name: Restore signing keystore
+        env:
+          KEY_B64: ${{ secrets.EDO_KEY_BASE64 }}
+        run: printf '%s' "$KEY_B64" | base64 --decode > "$RUNNER_TEMP/edo-upload-key.jks"
+      - name: Build signed v1.0 APK and AAB
+        env:
+          EDO_SIGNING_STORE_FILE: ${{ runner.temp }}/edo-upload-key.jks
+          EDO_SIGNING_STORE_PASSWORD: ${{ secrets.EDO_STORE_PASS }}
+          EDO_SIGNING_KEY_ALIAS: ${{ secrets.EDO_KEY_ALIAS }}
+          EDO_SIGNING_KEY_PASSWORD: ${{ secrets.EDO_KEY_PASS }}
+        run: gradle :app:assembleRelease :app:bundleRelease --no-daemon
+      - name: Verify APK signature and version
+        run: |
+          APK=app/build/outputs/apk/release/app-release.apk
+          "$ANDROID_HOME/build-tools/35.0.0/apksigner" verify --verbose "$APK"
+          "$ANDROID_HOME/build-tools/35.0.0/aapt" dump badging "$APK" | grep -q "versionName='1.0'"
+          "$ANDROID_HOME/build-tools/35.0.0/aapt" dump badging "$APK" | grep -q "versionCode='57'"
+          sha256sum "$APK" app/build/outputs/bundle/release/app-release.aab > SHA256SUMS-ANDROID.txt
+      - name: Save signed artifacts for TV testing
+        uses: actions/upload-artifact@v4
+        with:
+          name: Edo-v1.0-Android-TV-SIGNED-TEST-FIRST
+          path: |
+            app/build/outputs/apk/release/app-release.apk
+            app/build/outputs/bundle/release/app-release.aab
+            SHA256SUMS-ANDROID.txt
+          if-no-files-found: error
+          retention-days: 30
+      - name: Require explicit real-device confirmation
+        if: ${{ inputs.publish_release }}
+        run: |
+          if [ "${{ inputs.confirmed_hardware_tested }}" != "true" ]; then
+            echo "::error::Publish was requested without confirming real-device testing."
+            exit 1
+          fi
+      - name: Publish v1.0 (never overwrite an existing release)
+        if: ${{ inputs.publish_release && inputs.confirmed_hardware_tested }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if gh release view v1.0 --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            echo "::error::Release v1.0 already exists; refusing to overwrite it."
+            exit 1
+          fi
+          mkdir -p public-downloads
+          cp app/build/outputs/apk/release/app-release.apk public-downloads/Edo-v1.0-Android-TV.apk
+          cp app/build/outputs/bundle/release/app-release.aab public-downloads/Edo-v1.0-Android-TV.aab
+          gh release download v5.4.2 --repo "$GITHUB_REPOSITORY" --pattern 'Edo-Desktop-v1.0-Windows.zip' --dir public-downloads
+          (cd public-downloads && sha256sum Edo-v1.0-Android-TV.apk Edo-v1.0-Android-TV.aab Edo-Desktop-v1.0-Windows.zip > SHA256SUMS.txt)
+          gh release create v1.0 public-downloads/* --target "$GITHUB_SHA" --title "Edo v1.0" --notes-file docs/RELEASE-NOTES.md --latest --repo "$GITHUB_REPOSITORY"

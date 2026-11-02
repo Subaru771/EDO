@@ -10,14 +10,15 @@ android {
     namespace 'com.dropwave.tv'
     compileSdk 35
     defaultConfig {
-        // Keep the existing application ID to preserve upgrade compatibility.
+        // Keep the existing application ID for upgrades from prior Edo/DropWave releases.
+        // Version code must increase even when the public version name is reset to 1.0.
         applicationId 'com.dropwave.tv'
         minSdk 29
         // This Play release targets Android TV only. API 34 complies with the
         // Android TV exception to the 2026 target-level requirement.
         targetSdk 34
-        versionCode 56
-        versionName '5.4.2'
+        versionCode 57
+        versionName '1.0'
     }
     compileOptions { sourceCompatibility JavaVersion.VERSION_17; targetCompatibility JavaVersion.VERSION_17 }
     signingConfigs {

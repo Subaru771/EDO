@@ -9,7 +9,7 @@ function Secret([string]$prompt){
     try { return [Runtime.InteropServices.Marshal]::PtrToStringBSTR($p) }
     finally { [Runtime.InteropServices.Marshal]::ZeroFreeBSTR($p) }
 }
-Write-Host "Edo v5.4.2 — SIGNED Android TV release builder" -ForegroundColor Cyan
+Write-Host "Edo v1.0 - SIGNED Android TV release builder" -ForegroundColor Cyan
 Write-Host 'This creates an AAB for Google Play, and a signed APK for separate distribution.'
 $gradle=Join-Path (Get-Location).Path '.build-tools\gradle-8.9\bin\gradle.bat'
 if (!(Test-Path $gradle)) {
