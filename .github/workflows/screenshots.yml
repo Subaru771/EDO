@@ -1,0 +1,73 @@
+name: Capture real Edo Desktop screenshots
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/screenshots.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  capture:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+      - name: Install virtual display tools
+        run: sudo apt-get update && sudo apt-get install -y xvfb xdotool scrot
+      - name: Build desktop app
+        run: bash desktop/build.sh
+      - name: Screenshot share and file browser
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p docs/images
+          cat > /tmp/edo-capture.sh <<'SCRIPT'
+          #!/bin/bash
+          set -euo pipefail
+          mkdir -p /tmp/edo-demo-user/EdoShare
+          echo 'Example file for screenshot' > /tmp/edo-demo-user/EdoShare/example.txt
+          java -Duser.home=/tmp/edo-demo-user -jar desktop/dist/Edo-Desktop.jar >/tmp/edo-capture.log 2>&1 &
+          app_pid=$!
+          trap 'kill "$app_pid" 2>/dev/null || true' EXIT
+          window=""
+          for attempt in $(seq 1 35); do
+            window="$(xdotool search --name 'Edo Desktop' 2>/dev/null | head -1 || true)"
+            if [ -n "$window" ]; then break; fi
+            sleep 1
+          done
+          if [ -z "$window" ]; then cat /tmp/edo-capture.log; exit 1; fi
+          xdotool windowactivate --sync "$window"
+          xdotool windowsize "$window" 1160 810
+          xdotool windowmove "$window" 0 0
+          sleep 3
+          scrot -u docs/images/edo-desktop-share.png
+          xdotool mousemove 105 250 click 1
+          sleep 2
+          scrot -u docs/images/edo-desktop-files.png
+          test -s docs/images/edo-desktop-share.png
+          test -s docs/images/edo-desktop-files.png
+          SCRIPT
+          xvfb-run -a -s '-screen 0 1280x900x24' bash /tmp/edo-capture.sh
+      - name: Upload screenshots as artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: Edo-Desktop-v1.0-Screenshots
+          path: docs/images/*.png
+          if-no-files-found: error
+      - name: Commit captured screenshots
+        if: github.ref == 'refs/heads/main'
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add docs/images/edo-desktop-share.png docs/images/edo-desktop-files.png
+          if git diff --cached --quiet; then exit 0; fi
+          git commit -m 'docs: capture Edo Desktop running interface'
+          git pull --rebase origin main
+          git push origin HEAD:main
