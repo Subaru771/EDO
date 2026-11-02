@@ -1,4 +1,4 @@
-' Launch with javaw (no command window); JDK/JRE 17+ must be installed.
+' Launch with javaw (no command window); JDK/JRE 21+ must be installed.
 Set shell = CreateObject("WScript.Shell")
 Set fso = CreateObject("Scripting.FileSystemObject")
 base = fso.GetParentFolderName(WScript.ScriptFullName)
