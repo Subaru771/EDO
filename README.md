@@ -23,7 +23,6 @@ Transfer files across your local network without cloud storage, subscriptions, o
 5. Scan the QR code or enter the connection address on your other device.
 6. Start sharing files!
 
-**Note:** The Android APK is publicly available. A debug build has been tested successfully for PC-to-TV transfers; comprehensive testing of the separately signed release remains pending.
 
 ### Windows / macOS / Linux
 
