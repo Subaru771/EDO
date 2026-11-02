@@ -5,84 +5,73 @@ on:
   push:
     branches: [main]
     paths:
-      - 'desktop/src/**'
-      - 'desktop/build.sh'
-      - 'desktop/Start-Edo-Windows.cmd'
-      - 'desktop/Start-Edo-Windows.vbs'
-      - 'desktop/README-WINDOWS-v1.0.md'
+      - 'desktop/**'
+      - 'scripts/test-all.sh'
+      - 'app/src/main/java/com/dropwave/tv/**'
+      - 'app/src/main/assets/index.html'
       - '.github/workflows/desktop-windows.yml'
 
 permissions:
   contents: write
 
 jobs:
-  windows-desktop:
-    name: Java 21 desktop release
-    runs-on: windows-latest
+  tests:
+    name: Desktop and transfer regressions
+    runs-on: ubuntu-latest
     steps:
-      - name: Check out Edo
-        uses: actions/checkout@v4
-
-      - name: Set up Java 21
-        uses: actions/setup-java@v4
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: '21'
+      - name: Run Edo transfer and file-browser tests
+        run: bash scripts/test-all.sh
 
-      - name: Build modern Edo Desktop v1.0
+  desktop-windows:
+    name: Windows ZIP and existing release update
+    needs: tests
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+      - name: Compile Edo Desktop v1.0
         shell: bash
         run: bash desktop/build.sh
-
-      - name: Verify Java 21 class version and package Windows ZIP
+      - name: Verify desktop version
         shell: pwsh
         run: |
-          $ErrorActionPreference = "Stop"
-          $jar = "desktop/dist/Edo-Desktop.jar"
-          if (-not (Test-Path $jar)) { throw "Missing desktop JAR" }
-          $info = & javap -verbose -classpath $jar com.dropwave.desktop.DesktopMain
-          if (-not ($info | Select-String "major version: 65")) { throw "Expected Java 21 class version 65" }
-          $dir = "desktop/build/package/Edo-Desktop-v1.0"
-          New-Item -ItemType Directory -Force -Path $dir | Out-Null
-          Copy-Item $jar "$dir/Edo-Desktop.jar"
-          Copy-Item "desktop/Start-Edo-Windows.cmd" "$dir/Start-Edo-Windows.cmd"
-          Copy-Item "desktop/Start-Edo-Windows.vbs" "$dir/Start-Edo-Windows.vbs"
-          Copy-Item "desktop/README-WINDOWS-v1.0.md" "$dir/README.md"
-          Copy-Item "docs/PC-TO-PC.md" "$dir/PC-TO-PC.md"
-          Copy-Item "docs/SHARING-GUIDE.md" "$dir/SHARING-GUIDE.md"
-          Compress-Archive -Path $dir -DestinationPath "Edo-Desktop-v1.0-Windows.zip" -CompressionLevel Optimal -Force
-
-      - name: Upload Windows ZIP as workflow artifact
+          & jar xf desktop/dist/Edo-Desktop.jar META-INF/MANIFEST.MF
+          $text = Get-Content META-INF/MANIFEST.MF -Raw
+          if ($text -notmatch 'Implementation-Version: 1.0') { throw 'Desktop JAR is not v1.0' }
+      - name: Package Windows download
+        shell: pwsh
+        run: |
+          $folder = 'desktop/build/package/Edo-Desktop-v1.0'
+          New-Item -ItemType Directory -Path $folder -Force | Out-Null
+          Copy-Item desktop/dist/Edo-Desktop.jar $folder
+          Copy-Item desktop/Start-Edo-Windows.cmd $folder
+          Copy-Item desktop/Start-Edo-Windows.vbs $folder
+          Copy-Item docs/PC-TO-PC.md "$folder/PC-TO-PC.md"
+          Copy-Item docs/SHARING-GUIDE.md "$folder/SHARING-GUIDE.md"
+          Copy-Item desktop/README-FIRST.txt "$folder/README-FIRST.txt"
+          Compress-Archive -Path $folder -DestinationPath Edo-Desktop-v1.0-Windows.zip -CompressionLevel Optimal -Force
+          if (-not (Test-Path Edo-Desktop-v1.0-Windows.zip)) { throw 'No ZIP was created' }
+      - name: Upload Windows ZIP workflow artifact
         uses: actions/upload-artifact@v4
         with:
           name: Edo-Desktop-v1.0-Windows
           path: Edo-Desktop-v1.0-Windows.zip
           if-no-files-found: error
-
-      - name: Publish desktop v1.0 ZIP to existing release
+      - name: Replace Windows ZIP in existing v5.4.2 GitHub release
+        if: github.ref == 'refs/heads/main'
         shell: pwsh
         env:
-          GH_TOKEN: ${{ github.token }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          $ErrorActionPreference = "Stop"
-          gh release view v5.4.2 --repo $env:GITHUB_REPOSITORY
-          if ($LASTEXITCODE -ne 0) { throw "Android TV release v5.4.2 does not exist" }
-          gh release upload v5.4.2 "Edo-Desktop-v1.0-Windows.zip" --repo $env:GITHUB_REPOSITORY --clobber
-          if ($LASTEXITCODE -ne 0) { throw "Failed to publish Edo Desktop ZIP" }
-          gh release delete-asset v5.4.2 "Edo-v5.4.2-Windows-PC.zip" --repo $env:GITHUB_REPOSITORY --yes
-          if ($LASTEXITCODE -ne 0) { Write-Host "Old Windows ZIP not present; continuing." }
-
-      - name: Bundle optional portable Windows Edo.exe preview
-        shell: pwsh
-        continue-on-error: true
-        run: |
-          jpackage --type app-image --name Edo --input desktop/dist --main-jar Edo-Desktop.jar --main-class com.dropwave.desktop.DesktopMain --app-version 1.0 --dest desktop/build/windows --icon desktop/resources/edo-icon.ico --vendor Edo
-          if ($LASTEXITCODE -ne 0) { throw "Optional portable EXE build failed" }
-          Compress-Archive -Path "desktop/build/windows/Edo" -DestinationPath "Edo-Desktop-v1.0-Portable-EXE.zip" -CompressionLevel Optimal
-
-      - name: Upload portable EXE preview artifact
-        if: ${{ hashFiles('Edo-Desktop-v1.0-Portable-EXE.zip') != '' }}
-        uses: actions/upload-artifact@v4
-        with:
-          name: Edo-Desktop-v1.0-Portable-EXE-preview
-          path: Edo-Desktop-v1.0-Portable-EXE.zip
-          if-no-files-found: warn
+          gh release view v5.4.2 --repo "$env:GITHUB_REPOSITORY"
+          if ($LASTEXITCODE -ne 0) { throw 'Existing v5.4.2 release is missing' }
+          gh release upload v5.4.2 Edo-Desktop-v1.0-Windows.zip --clobber --repo "$env:GITHUB_REPOSITORY"
+          if ($LASTEXITCODE -ne 0) { throw 'Release asset upload failed' }
