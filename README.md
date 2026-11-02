@@ -2,7 +2,7 @@
 
 **Free, local-first file sharing for computers, phones, and Google TV.** Send and receive files over your local Wi-Fi or Ethernet network without a cloud account.
 
-[Download Edo v5.4.2](https://github.com/Subaru771/EDO/releases/tag/v5.4.2) · [How to use Edo](#how-to-connect) · [Report a problem](https://github.com/Subaru771/EDO/issues)
+[Download Edo](https://github.com/Subaru771/EDO/releases/tag/v5.4.2) · [How to use Edo](#how-to-connect) · [Report a problem](https://github.com/Subaru771/EDO/issues)
 
 ## Download Edo
 
@@ -11,12 +11,12 @@
 | Download | For | What you get |
 | --- | --- | --- |
 | **[Android TV / Google TV — APK](https://github.com/Subaru771/EDO/releases/download/v5.4.2/app-release.apk)** | Google TV and compatible Android TV devices | Signed Android installation package |
-| **[Windows PC — ZIP](https://github.com/Subaru771/EDO/releases/download/v5.4.2/Edo-v5.4.2-Windows-PC.zip)** | Windows 10/11 | Edo Desktop Java application, launcher and setup guide (**Java 21+ required for this ZIP**) |
+| **[Windows PC — Edo Desktop v1.0](https://github.com/Subaru771/EDO/releases/download/v5.4.2/Edo-Desktop-v1.0-Windows.zip)** | Windows 10/11 | Redesigned desktop sharing dashboard, launcher and setup guide (**Java 21+**) |
 | [All release assets](https://github.com/Subaru771/EDO/releases/latest) | Everyone | Latest published downloads and source archives |
 
-**Windows:** Extract the entire ZIP, install [Java 21 or newer](https://adoptium.net/temurin/releases/?version=21) if necessary, then double-click **`Start-Edo-Windows.cmd`**. This is a Java desktop companion, **not a standalone Windows EXE**.
+**Windows:** Extract the entire ZIP, install [Java 21 or newer](https://adoptium.net/temurin/releases/?version=21) if necessary, then double-click **`Start-Edo-Windows.vbs`** to launch the modern desktop dashboard. If it does not open, use **`Start-Edo-Windows.cmd`** to see the error. This ZIP is a Java desktop companion, **not a standalone Windows EXE**.
 
-**macOS / Linux:** On a computer with Java 21+, extract the same desktop ZIP and run `java -jar Edo-Desktop.jar`. A native Mac or Linux installer is not included.
+**macOS / Linux:** On a computer with Java 21+, extract the same desktop ZIP and run `java -jar Edo-Desktop.jar`. The desktop Java app is cross-platform, but native Mac or Linux installers are not included.
 
 **iPhone / iPad / Android phone:** Open the host's local address using Safari or another compatible browser. No separate phone app is required for browser transfers; a native iOS application has not been released.
 
@@ -44,7 +44,7 @@
 5. Pair using the PIN and approve the connection on Computer A if prompted.
 6. Use **Transfer** to send files **from B to A**, or **Files** to download files **from A to B**.
 
-Only Computer A needs Edo Desktop for this setup. Both PCs must be on the same reachable local network. For more options, read the [PC-to-PC guide](docs/PC-TO-PC.md).
+Only Computer A needs Edo Desktop for this setup. Both PCs must be on the same reachable local network. For more options, read the [PC-to-PC guide](docs/PC-TO-PC.md) and the [Windows v1.0 quick start](desktop/README-WINDOWS-v1.0.md).
 
 ### Phone ↔ PC
 
@@ -60,6 +60,10 @@ Start Edo Desktop on your computer, then visit its displayed address from your p
 **Security note:** Scanning the QR code may automatically supply pairing information; treat it as a credential. Enable TV approval for new devices when appropriate.
 
 [More device combinations and troubleshooting](docs/SHARING-GUIDE.md)
+
+## Edo Desktop v1.0
+
+The modern Windows desktop app has dedicated **Share**, **Backup & Sync**, and **Settings** screens, a prominent local connection address and pairing PIN, and quick-copy controls. It uses the same local sharing engine as the previous version.
 
 ## Features
 
@@ -94,7 +98,7 @@ Read [SECURITY.md](SECURITY.md) and the [secure connection guide](SECURE-CONNECT
 - [Project history](docs/PROJECT-HISTORY.md)
 - [GitHub Releases](https://github.com/Subaru771/EDO/releases)
 
-Edo v5.4.2 is an early public release. Automated tests cover parts of the transfer engine, but they do not establish universal compatibility. Contributions and bug reports are welcome through [Issues](https://github.com/Subaru771/EDO/issues).
+**Versions:** Android TV **v5.4.2** · Edo Desktop **v1.0**. Automated tests cover parts of the transfer engine, but they do not establish universal compatibility. Contributions and bug reports are welcome through [Issues](https://github.com/Subaru771/EDO/issues).
 
 ---
 
