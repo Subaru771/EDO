@@ -1,12 +1,12 @@
 # Transfer files from one PC to another with Edo
 
-**No Google TV or Android device is needed.** Use Windows, macOS or Linux with Java 17+ on one computer; a browser is enough on the second.
+Run **Edo Desktop v1.0** on one Windows, macOS or Linux computer with **Java 21+**, and connect from a browser on the second computer.
 
 ## Fastest method: only one PC installs Edo
 
 ### On Computer A (receiving / sharing PC)
 1. Both PCs should be on the same trusted LAN (Wi-Fi or Ethernet). Disable guest Wi-Fi isolation if it blocks device-to-device connections.
-2. Open `desktop/dist/Edo-Desktop.jar` with Java 17+ (on Windows, `desktop/dist/Edo-Windows.vbs` also works if Java is installed).
+2. Download and extract [`Edo-Desktop-v1.0-Windows.zip`](https://github.com/Subaru771/EDO/releases/download/v5.4.2/Edo-Desktop-v1.0-Windows.zip). With Java 21+ installed, on Windows open `Start-Edo-Windows.vbs` (or `Start-Edo-Windows.cmd` for diagnostics). On macOS/Linux run `java -jar Edo-Desktop.jar`.
 3. Choose a folder you want to share. **Only share files you're comfortable letting paired devices access.**
 4. Click **Start sharing**. Copy the complete local address printed in Edo (for example, `http://192.168.1.20:8765`). The address varies per network.
 5. Find the six-digit pairing PIN in Edo Desktop. If device approval is enabled, keep this window available.
@@ -35,4 +35,4 @@ Install Edo Desktop on **both** computers. Each can host its own shared folder, 
 
 `PC A (Edo Desktop / server) ← Wi-Fi/Ethernet → PC B (browser)`
 
-The TV can be completely off. Files stay inside the local network unless you deliberately share or back them up elsewhere.
+Files stay on the local network unless you deliberately share or back them up elsewhere.
