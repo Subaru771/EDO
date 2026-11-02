@@ -1,17 +1,17 @@
-# Edo Desktop for Windows
+# Edo Desktop v1.0 — Windows
 
-## Portable Windows Edo.exe (preview)
+## Java desktop ZIP
 
-Open the [Windows build workflow](https://github.com/Subaru771/EDO/actions/workflows/desktop-windows.yml), select a successful build and download the `Edo-Desktop-v1.0-Portable` artifact.
+Download the **Edo Desktop v1.0** ZIP from [GitHub Releases](https://github.com/Subaru771/EDO/releases). Extract the entire archive and install [Java 21+](https://adoptium.net/temurin/releases/?version=21) if necessary.
 
-Extract `Edo-Desktop-v1.0-Windows-Portable.zip` completely. Launch **Edo/Edo.exe**. Keep the whole Edo folder with its bundled Java runtime, rather than moving only the executable.
+Open `Start-Edo-Windows.vbs` (no console), or `Start-Edo-Windows.cmd` (shows startup diagnostics).
 
-This build is an **unsigned test artifact** until it has been verified on a Windows PC and intentionally published in a new Release.
+## Portable Edo.exe
 
-## Existing public Java ZIP
+The [Windows build workflow](https://github.com/Subaru771/EDO/actions/workflows/desktop-windows.yml) builds `Edo-Desktop-v1.0-Windows-Portable.zip` using `jpackage` with Java included. Extract the **whole** ZIP and run `Edo/Edo.exe`. The portable build is unsigned and should be tested before public distribution; don't disable antivirus to launch it.
 
-[Download Edo Desktop v1.0](https://github.com/Subaru771/EDO/releases/download/v5.4.2/Edo-Desktop-v1.0-Windows.zip). Extract it, install Java 21+, then open `Start-Edo-Windows.vbs` or use the `.cmd` launcher to see errors.
+## Share between PCs
 
-## PC-to-PC transfers
+On the host PC, choose the shared folder and start sharing. On another computer, open the displayed address in a browser and pair. Upload using Transfer; download through Files. Use trusted LANs: HTTP is not encrypted.
 
-On PC A, run Edo, choose a folder and start sharing. On PC B, open the displayed URL in a browser, enter the PIN and approve on PC A if prompted. Use Transfer to upload and Files to download. Share only on trusted local networks; HTTP is not encrypted.
+See [PC-to-PC instructions](PC-TO-PC.md).

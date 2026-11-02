@@ -1,17 +1,14 @@
 # Changelog
 
-Edo Android TV and Edo Desktop have independent versions.
+## Edo v1.0 — Unified release
 
-## Edo Desktop v1.0
-- Modern desktop dashboard and built-in file manager.
-- Java 21 desktop app; portable bundled-Java Windows executable is built in CI.
-- Windows release assets are no longer overwritten automatically.
+- Common visible version for Google TV / Android TV and Edo Desktop.
+- Desktop dashboard with Share, Your files, Backup & Sync and Settings.
+- Native desktop file browser; browser-based LAN uploads and downloads.
+- PIN pairing, optional new-device approval, and optional HTTPS/WebDAV.
+- Android package ID preserved for upgrades; Android version code advances to **57**.
+- Modern desktop build pipeline; Java-bundled Windows portable preview.
+- GitHub repository cleanup, simplified documentation and security guidance.
+- Signed Android v1.0 build and real-device verification are required before publishing the new APK.
 
-## Edo Android TV v5.4.2
-- Google TV sharing using QR/PIN and browser access.
-- Signed Android APK available in GitHub Releases.
-- Subsequent security source changes need testing and a new signed APK before distribution.
-
-[Earlier Android notes](CHANGELOG-v5.4.2.md) · [Project history](docs/PROJECT-HISTORY.md)
-
-New public binaries must use new version tags and include checksums.
+Older experiments and development versions remain available in Git history rather than cluttering the active project.

@@ -1,13 +1,14 @@
-# Contributing to Edo
+# Contributing to Edo v1.0
 
-Bug reports and pull requests are welcome.
+Pull requests and issue reports are welcome. Both Desktop and Android TV use public version **1.0** for this release.
 
-- Describe the affected platform, version and reproduction steps.
+- Explain the affected platform, steps to reproduce, and actual vs expected result.
 - Run `bash scripts/test-all.sh` with Java 21, Python 3 and Node.js.
-- Keep Android TV and Desktop versions independent.
-- For UI changes, provide real application screenshots with IP addresses and pairing PINs obscured.
-- Verify new Windows installers on real hardware before public distribution.
-- Never commit passwords, session cookies, keystores or private user files.
-- Submit only code and artwork you are permitted to license under MIT.
+- Test Android Java builds with Java 17 and Gradle; test desktop with Java 21.
+- Preserve Android package ID `com.dropwave.tv` and increase `versionCode` on all future TV releases.
+- Do not commit credentials, private signing keys, personal data, or generated build artifacts.
+- Do not automatically republish existing signed release assets.
+- Include real screenshots with IPs, pairing PINs, private filenames and QR credentials obscured.
+- Submit only source and artwork that you have the right to license under MIT.
 
-For security issues, avoid posting active exploits or credentials publicly. Consult [SECURITY.md](SECURITY.md).
+Report security issues responsibly rather than publishing active secrets or exploit instructions. Read [SECURITY.md](SECURITY.md).

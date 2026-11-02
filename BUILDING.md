@@ -1,31 +1,44 @@
-# Build and install Edo v5.4
+# Build Edo v1.0
 
-## Google TV / Android APK
+Edo has two components: the Android TV app (Java 17 / Gradle) and the desktop host (Java 21). Both use the visible version **1.0**.
 
-1. Extract the complete project ZIP in Windows (do not run from inside ZIP).
-2. Ensure JDK 17 or newer is installed. The script verifies `java` and `javac`.
-3. Run `BUILD-APK-WINDOWS.cmd`. It locates an Android SDK in `ANDROID_HOME`, `ANDROID_SDK_ROOT`, or `%LOCALAPPDATA%\Android\Sdk`. If Platform 35 / Build Tools 35 are missing, it installs a verified Google Android CLI before attempting package installation. It prompts you to accept the Android SDK licenses.
-4. The expected debug APK is `app\build\outputs\apk\debug\app-debug.apk`.
-5. Use your existing TV file transfer method to move the APK to Google TV, then launch it with Android's installer. Android may require allowing installs from this source. Some TV firmware prevents sideloading.
+## Android TV / Google TV
 
-If SDK setup fails, build through `.github/workflows/android-apk.yml` instead. A successfully completed Java test run does not prove Android compilation.
+- Android `applicationId`: `com.dropwave.tv` — retained to support updates to the existing app.
+- `versionName`: `1.0`. `versionCode`: **57** (must increase from previous releases).
+- Compile SDK 35, target SDK 34, minimum SDK 29, JDK 17, Gradle 8.9.
 
-**Compatibility:** minSdk 29 (Android 10), compileSdk 35, targetSdk 34, Java 17, Android Gradle Plugin 8.7.3 / Gradle 8.9. Application ID `com.dropwave.tv` is deliberately retained. Installing over an earlier APK requires compatible signing keys; mismatched debug keys may require uninstall/reinstall, which clears app-private settings. Public files in `Downloads/DropWave` should be backed up independently.
+**Windows local debug build:** from the repository root, run `scripts\build-android-debug.cmd` with Java 17 and Android SDK. Output: `app\build\outputs\apk\debug\app-debug.apk`.
 
-## Windows / desktop
+**Windows signed build:** run `scripts\build-android-release.cmd`. The build reuses the existing keystore under `%USERPROFILE%\EdoSigningKeys\edo-upload-key.jks`. Enter signing passwords only in the local prompt. Outputs: `app\build\outputs\apk\release\app-release.apk` and `app\build\outputs\bundle\release\app-release.aab`.
 
-**Edo Desktop v1.0 requires JDK/Java 21+.** Compile with `bash desktop/build.sh` from the repository root. Run `java -jar desktop/dist/Edo-Desktop.jar`. On Windows, download the [v1.0 ZIP](https://github.com/Subaru771/EDO/releases/download/v5.4.2/Edo-Desktop-v1.0-Windows.zip), extract it, then run `Start-Edo-Windows.vbs`; use `Start-Edo-Windows.cmd` to see errors. GitHub's `.github/workflows/desktop-windows.yml` also builds a portable `Edo.exe` preview with its own runtime, available as a workflow artifact after successful CI. Android builds still use Java 17 and their separate Gradle workflow.
+**GitHub:** `Build Edo v1.0 TV debug APK` tests compilation. `Build signed Edo v1.0 Android TV release` is manual and requires the four encrypted Actions secrets: `EDO_KEY_BASE64`, `EDO_STORE_PASS`, `EDO_KEY_ALIAS`, `EDO_KEY_PASS`. Leave publication disabled to download and test the signed artifact first; publishing requires explicit hardware-test confirmation.
 
-## iPhone / iPad
+**Warning:** preserve the original signing key. An APK signed with a different key cannot simply update the previously installed app. Back up app data before considering uninstall/reinstall. Never commit or publish signing keys or passwords.
 
-Safari works without installation. For the SwiftUI app, you need macOS Xcode to create and sign a native iOS app. On a Mac, install XcodeGen and from `ios/` run `xcodegen generate`, open `Edo.xcodeproj`, configure a signing team and run on a device. GitHub Actions can verify simulator compilation without signing but is not a free permanent installation route for physical devices.
+## Edo Desktop (Windows, macOS, Linux)
 
-## Optional HTTPS/WebDAV
+Requires **JDK 21+ to build**, or Java 21+ to run the JAR. Build from the repository root:
 
-TV: Dashboard → Security & Pairing → Toggle HTTPS. The app restarts the sharing service; the displayed QR address changes to `https://`. Compare its certificate fingerprint with the browser's certificate information. WebDAV credentials are displayed by a separate TV button.
+```bash
+bash desktop/build.sh
+java -jar desktop/dist/Edo-Desktop.jar
+```
 
-Desktop: Check 'Encrypted HTTPS', then Start sharing. The desktop displays the SHA-256 fingerprint and WebDAV credentials. Browser clients may refuse a self-signed connection until you explicitly trust it. iOS often requires a trusted certificate profile; do not bypass TLS validation.
+The `.github/workflows/desktop-windows.yml` CI builds a portable Windows `Edo.exe` with its own Java runtime. The portable Windows package is **unsigned** and should be hardware-tested before publication. Keep the entire extracted directory.
 
-## New secure connection help
+## Tests
 
-See `SECURE-CONNECTION-GUIDE.md` for the Android TV certificate fingerprint, public certificate export, and per-platform limitations. Changing between HTTP and HTTPS no longer stops/restarts the whole Android service asynchronously.
+With Java 21, Python 3 and Node.js installed:
+
+```bash
+bash scripts/test-all.sh
+```
+
+Tests cover the transfer engine and file browser; passing them does **not** replace Android compilation, signed APK testing, or real-device security review.
+
+## Local-network security
+
+Edo's HTTP mode is plaintext. Optional HTTPS uses a self-signed certificate; clients must verify the fingerprint, and some browsers may reject connections without a valid IP SAN.
+
+See [secure connection instructions](docs/SECURE-CONNECTION-GUIDE.md) and [release policy](docs/RELEASES.md).
