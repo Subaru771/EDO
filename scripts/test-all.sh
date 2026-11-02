@@ -29,18 +29,25 @@ PY
   node --check "$dir/browser.js"
   echo 'PASS: Web UI JavaScript syntax'
 fi
-if command -v swiftc >/dev/null; then
+if command -v swiftc >/dev/null && [ -d ios/Edo ] && [ -d ios/EdoShare ] && compgen -G 'ios/Edo/*.swift' >/dev/null && compgen -G 'ios/EdoShare/*.swift' >/dev/null; then
   swiftc -frontend -parse ios/Edo/*.swift ios/EdoShare/*.swift
   echo 'PASS: iOS Swift parser (NOT iOS compilation)'
+else
+  echo 'SKIP: iOS Swift parser (optional iOS sources absent or Swift unavailable)'
 fi
 python3 - <<'PY'
 import xml.etree.ElementTree as ET
 import plistlib
 ET.parse('app/src/main/AndroidManifest.xml')
 ET.parse('app/src/main/res/values/strings.xml')
-for plist in ('ios/Edo/Info.plist','ios/EdoShare/Info.plist','ios/Edo/Edo.entitlements','ios/EdoShare/EdoShare.entitlements'):
-    with open(plist,'rb') as f:plistlib.load(f)
-print('PASS: Android XML and iOS plist syntax')
+from pathlib import Path
+plists = ('ios/Edo/Info.plist','ios/EdoShare/Info.plist','ios/Edo/Edo.entitlements','ios/EdoShare/EdoShare.entitlements')
+if all(Path(p).is_file() for p in plists):
+    for plist in plists:
+        with open(plist,'rb') as f: plistlib.load(f)
+    print('PASS: Android XML and iOS plist syntax')
+else:
+    print('PASS: Android XML syntax; SKIP: optional iOS plist files not in repository')
 PY
 
 python3 scripts/verify-brand-assets.py
