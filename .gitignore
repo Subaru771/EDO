@@ -23,3 +23,12 @@ desktop/installers/
 Thumbs.db
 .idea/
 .vscode/
+
+# Additional signing / provisioning files
+keystore.properties
+**/keystore.properties
+**/credentials.properties
+*.pfx
+*.key
+*.asc
+*.mobileprovision
