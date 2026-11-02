@@ -39,7 +39,9 @@ public final class TransferService extends Service {
             try{
                 AndroidFiles files=new AndroidFiles(this);
                 LanServer instance=new LanServer(files,()->getAssets().open("index.html"),new java.io.File(getFilesDir(),"transfers"));
-                instance.setRequireApproval(getSharedPreferences("dropwave",0).getBoolean("require_approval",true));
+                android.content.SharedPreferences pairingPrefs=getSharedPreferences("dropwave",0);
+                if(!pairingPrefs.contains("require_approval"))pairingPrefs.edit().putBoolean("require_approval",true).apply();
+                instance.setRequireApproval(pairingPrefs.getBoolean("require_approval",true));
                 instance.setRemoteControl(getSharedPreferences("dropwave",0).getBoolean("allow_remote",false),RemoteControlBridge::perform);
                 boolean encrypted=getSharedPreferences("dropwave",0).getBoolean("secure_tls",false);
                 if(encrypted)instance.startSecure(8765,TlsAndroid.context());else instance.start(8765);
