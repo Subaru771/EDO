@@ -3,7 +3,7 @@ set -euo pipefail
 cd "$(dirname "$0")/.."
 dir="$(mktemp -d)"
 trap 'rm -rf "$dir"' EXIT
-javac -encoding UTF-8 -d "$dir" \
+javac --release 17 -encoding UTF-8 -d "$dir" \
   app/src/main/java/com/dropwave/tv/{LibraryIndex,LanServer,ResumeStore,TransferJournal,TrustRegistry,WebDav,UdpDiscovery,PeerClient}.java \
   desktop/src/com/dropwave/desktop/{DiskRepository,SyncClient,TwoWaySync,TlsDesktop,SyncTest,TwoWaySyncTest,SecureDavTest,ConnectionSecurityTest}.java \
   tests/{SmokeTest,AdvancedTest,PeerClientTest,RemoteControlTest,UdpDiscoveryTest,LibraryIndexTest,LegacyPeerClientTest}.java
