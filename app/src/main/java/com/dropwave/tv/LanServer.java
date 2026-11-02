@@ -186,6 +186,10 @@ public final class LanServer implements AutoCloseable {
                 headers.putIfAbsent(line.substring(0,sep).trim().toLowerCase(Locale.ROOT),line.substring(sep+1).trim());
             }
             String rawPath=target.split("\\?",2)[0];
+            // Browsers visiting unrelated sites cannot invoke Edo's LAN API.
+            if("cross-site".equalsIgnoreCase(headers.get("sec-fetch-site")) && rawPath.startsWith("/api/")) {
+                reply(out,403,"application/json","{\"error\":\"Cross-site browser request denied\"}");return;
+            }
             Map<String,String> query=parseQuery(target.indexOf('?')<0?"":target.substring(target.indexOf('?')+1));
             // Safe, public reachability probe. Never disclose PIN, sessions, files or secrets.
             if(method.equals("GET") && rawPath.equals("/api/health")) {
