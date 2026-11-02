@@ -42,9 +42,16 @@ The public Windows ZIP uses Java 21 and a launcher script. The new portable `Edo
 
 [LocalSend](https://localsend.org/) is a mature encrypted native-app alternative. Edo focuses on Google TV hosting and browser clients. **Edo's default HTTP connections are not encrypted.**
 
-## Screenshots and interface
+## Desktop screenshots
 
-Edo Desktop v1.0 has a modern **Share**, **Your files**, **Backup & Sync**, and **Settings** interface. Real UI screenshot capture is being prepared; we won't present mockups as hardware screenshots.
+These screenshots are from Edo Desktop v1.0 running in a test environment. The local address and pairing PIN have been masked.
+
+| Share files | Your files |
+| --- | --- |
+| <img src="docs/images/edo-desktop-share.png" alt="Edo Desktop v1.0 Share files dashboard with connection address and pairing PIN masked" width="460"> | <img src="docs/images/edo-desktop-files.png" alt="Edo Desktop v1.0 native file browser showing folders, search, and file management actions" width="460"> |
+| Start sharing, copy the connection address, and pair another device | Browse, import, search, and organize the shared folder |
+
+The Android TV interface is different. A real-device TV screenshot has not yet been added. See [Screenshot guidelines](docs/SCREENSHOTS.md).
 
 ## Privacy and security
 
