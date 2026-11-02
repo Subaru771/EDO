@@ -1,4 +1,4 @@
-# Edo v5.4.2 — Sharing clarity update
+# Edo 1.0 — Sharing clarity update
 
 **No changes to file transfer protocols or classic Google TV screen layout.** This release makes PC-to-PC and phone-to-PC transfers much easier to discover.
 
