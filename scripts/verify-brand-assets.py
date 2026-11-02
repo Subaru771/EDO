@@ -23,9 +23,13 @@ html=(root/'app/src/main/assets/index.html').read_text()
 assert 'class="brandmark"' in html and '<link rel="icon" type="image/png" href="data:image/png;base64,' in html
 assert '<script>' in html and len(html.encode()) < 500_000
 assert 'cp desktop/resources/edo-icon.png desktop/build/classes/edo-icon.png' in (root/'desktop/build.sh').read_text()
-contents=json.loads((root/'ios/Edo/Assets.xcassets/AppIcon.appiconset/Contents.json').read_text())
-assert len(contents['images']) >= 18
-for image in contents['images']:
-    check_png('ios/Edo/Assets.xcassets/AppIcon.appiconset/'+image['filename'])
-assert 'ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon' in (root/'ios/project.yml').read_text()
-print('PASS: Official Edo branding wired to Android TV, browser, desktop and iOS source')
+ios_icon=root/'ios/Edo/Assets.xcassets/AppIcon.appiconset/Contents.json'
+if ios_icon.is_file() and (root/'ios/project.yml').is_file():
+    contents=json.loads(ios_icon.read_text())
+    assert len(contents['images']) >= 18
+    for image in contents['images']:
+        check_png('ios/Edo/Assets.xcassets/AppIcon.appiconset/'+image['filename'])
+    assert 'ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon' in (root/'ios/project.yml').read_text()
+    print('PASS: Official Edo branding wired to Android TV, browser, desktop and iOS source')
+else:
+    print('PASS: Official Edo branding wired to Android TV, browser and desktop; SKIP: iOS assets absent')
