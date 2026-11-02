@@ -11,10 +11,10 @@
 | Download | For | What you get |
 | --- | --- | --- |
 | **[Android TV / Google TV — APK](https://github.com/Subaru771/EDO/releases/download/v5.4.2/app-release.apk)** | Google TV and compatible Android TV devices | Signed Android installation package |
-| **[Windows PC — Edo Desktop v1.0](https://github.com/Subaru771/EDO/releases/download/v5.4.2/Edo-Desktop-v1.0-Windows.zip)** | Windows 10/11 | Redesigned desktop sharing dashboard, launcher and setup guide (**Java 21+**) |
+| **[Windows PC — Edo Desktop v1.0](https://github.com/Subaru771/EDO/releases/download/v5.4.2/Edo-Desktop-v1.0-Windows.zip)** | Windows 10/11 | Redesigned dashboard with native **Your files** browser, launcher and setup guide (**Java 21+) |
 | [All release assets](https://github.com/Subaru771/EDO/releases/latest) | Everyone | Latest published downloads and source archives |
 
-**Windows:** Extract the entire ZIP, install [Java 21 or newer](https://adoptium.net/temurin/releases/?version=21) if necessary, then double-click **`Start-Edo-Windows.vbs`** to launch the modern desktop dashboard. If it does not open, use **`Start-Edo-Windows.cmd`** to see the error. This ZIP is a Java desktop companion, **not a standalone Windows EXE**.
+**Windows:** Extract the entire ZIP, install [Java 21 or newer](https://adoptium.net/temurin/releases/?version=21) if necessary, then double-click **`Start-Edo-Windows.vbs`** to launch the modern desktop dashboard. If it does not open, use **`Start-Edo-Windows.cmd`** to see the error. This ZIP is a Java desktop companion, **not a standalone Windows EXE**. Open **Your files** in the sidebar to search, import, create folders, rename, copy/move, and delete items inside the shared folder.
 
 **macOS / Linux:** On a computer with Java 21+, extract the same desktop ZIP and run `java -jar Edo-Desktop.jar`. The desktop Java app is cross-platform, but native Mac or Linux installers are not included.
 
@@ -42,7 +42,7 @@
 3. Note the displayed network address, for example `http://192.168.1.20:8765`, and the pairing PIN.
 4. On **Computer B**, open that exact address in Chrome, Edge, Brave, Safari, or another compatible browser.
 5. Pair using the PIN and approve the connection on Computer A if prompted.
-6. Use **Transfer** to send files **from B to A**, or **Files** to download files **from A to B**.
+6. Use **Transfer** to send files **from B to A**, or **Files** to download files **from A to B**. On Computer A, manage the shared folder in Edo Desktop's **Your files** tab.
 
 Only Computer A needs Edo Desktop for this setup. Both PCs must be on the same reachable local network. For more options, read the [PC-to-PC guide](docs/PC-TO-PC.md) and the [Windows v1.0 quick start](desktop/README-WINDOWS-v1.0.md).
 
@@ -73,6 +73,7 @@ The modern Windows desktop app has dedicated **Share**, **Backup & Sync**, and *
 - PIN pairing, remembered devices and optional host approval
 - Optional HTTPS and authenticated WebDAV (certificate setup may be necessary)
 - Device discovery with manual IP-address fallback
+- Built-in **Your files** browser on Edo Desktop v1.0 for local folder management
 - Desktop backup and non-destructive folder synchronization tools
 - A classic native Google TV interface and a separate browser interface
 
