@@ -1,4 +1,4 @@
-name: Build and publish Edo Desktop v1.0
+name: Edo Desktop v1.0 - Windows bundled-runtime build
 
 on:
   workflow_dispatch:
@@ -6,18 +6,15 @@ on:
     branches: [main]
     paths:
       - 'desktop/**'
-      - 'scripts/test-all.sh'
-      - 'scripts/verify-brand-assets.py'
       - 'app/src/main/java/com/dropwave/tv/**'
-      - 'app/src/main/assets/index.html'
+      - 'scripts/test-all.sh'
       - '.github/workflows/desktop-windows.yml'
 
 permissions:
-  contents: write
+  contents: read
 
 jobs:
-  tests:
-    name: Desktop and transfer regressions
+  test:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -25,12 +22,11 @@ jobs:
         with:
           distribution: temurin
           java-version: '21'
-      - name: Run Edo transfer and file-browser tests
+      - name: Run transfer and desktop tests
         run: bash scripts/test-all.sh
 
-  desktop-windows:
-    name: Windows ZIP and existing release update
-    needs: tests
+  windows:
+    needs: test
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v4
@@ -41,38 +37,41 @@ jobs:
       - name: Compile Edo Desktop v1.0
         shell: bash
         run: bash desktop/build.sh
-      - name: Verify desktop version
+      - name: Build portable Edo.exe with bundled Java
         shell: pwsh
         run: |
-          & jar xf desktop/dist/Edo-Desktop.jar META-INF/MANIFEST.MF
-          $text = Get-Content META-INF/MANIFEST.MF -Raw
-          if ($text -notmatch 'Implementation-Version: 1.0') { throw 'Desktop JAR is not v1.0' }
-      - name: Package Windows download
-        shell: pwsh
-        run: |
-          $folder = 'desktop/build/package/Edo-Desktop-v1.0'
-          New-Item -ItemType Directory -Path $folder -Force | Out-Null
-          Copy-Item desktop/dist/Edo-Desktop.jar $folder
-          Copy-Item desktop/Start-Edo-Windows.cmd $folder
-          Copy-Item desktop/Start-Edo-Windows.vbs $folder
-          Copy-Item docs/PC-TO-PC.md "$folder/PC-TO-PC.md"
-          Copy-Item docs/SHARING-GUIDE.md "$folder/SHARING-GUIDE.md"
-          Copy-Item desktop/README-FIRST.txt "$folder/README-FIRST.txt"
-          Compress-Archive -Path $folder -DestinationPath Edo-Desktop-v1.0-Windows.zip -CompressionLevel Optimal -Force
-          if (-not (Test-Path Edo-Desktop-v1.0-Windows.zip)) { throw 'No ZIP was created' }
-      - name: Upload Windows ZIP workflow artifact
+          New-Item -ItemType Directory -Path desktop/installers -Force | Out-Null
+          jpackage --type app-image --name Edo --app-version 1.0 --vendor 'Edo' --description 'Edo local file transfer' --input desktop/dist --main-jar Edo-Desktop.jar --main-class com.dropwave.desktop.DesktopMain --icon desktop/resources/edo-icon.ico --dest desktop/installers
+          if ($LASTEXITCODE -ne 0) { throw 'jpackage failed' }
+          if (-not (Test-Path desktop/installers/Edo/Edo.exe)) { throw 'Edo.exe missing' }
+          Compress-Archive -Path desktop/installers/Edo -DestinationPath Edo-Desktop-v1.0-Windows-Portable.zip -CompressionLevel Optimal -Force
+          $hash = (Get-FileHash Edo-Desktop-v1.0-Windows-Portable.zip -Algorithm SHA256).Hash.ToLower()
+          "$hash  Edo-Desktop-v1.0-Windows-Portable.zip" | Set-Content SHA256SUMS.txt -Encoding ascii
+      - name: Upload portable Edo.exe and checksum
         uses: actions/upload-artifact@v4
         with:
-          name: Edo-Desktop-v1.0-Windows
-          path: Edo-Desktop-v1.0-Windows.zip
+          name: Edo-Desktop-v1.0-Portable
+          path: |
+            Edo-Desktop-v1.0-Windows-Portable.zip
+            SHA256SUMS.txt
           if-no-files-found: error
-      - name: Replace Windows ZIP in existing v5.4.2 GitHub release
-        if: github.ref == 'refs/heads/main'
+          retention-days: 30
+      - name: Optional Windows EXE installer
         shell: pwsh
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        continue-on-error: true
         run: |
-          gh release view v5.4.2 --repo "$env:GITHUB_REPOSITORY"
-          if ($LASTEXITCODE -ne 0) { throw 'Existing v5.4.2 release is missing' }
-          gh release upload v5.4.2 Edo-Desktop-v1.0-Windows.zip --clobber --repo "$env:GITHUB_REPOSITORY"
-          if ($LASTEXITCODE -ne 0) { throw 'Release asset upload failed' }
+          if (-not (Get-Command candle.exe -ErrorAction SilentlyContinue)) { Write-Host 'WiX unavailable; portable build is ready.'; exit 0 }
+          jpackage --type exe --name Edo --app-version 1.0 --vendor Edo --description 'Edo local file transfer' --input desktop/dist --main-jar Edo-Desktop.jar --main-class com.dropwave.desktop.DesktopMain --icon desktop/resources/edo-icon.ico --dest desktop/installers --win-menu --win-shortcut
+          if ($LASTEXITCODE -ne 0) { throw 'Optional installer failed' }
+          $exe = Get-ChildItem desktop/installers -Filter '*.exe' | Select-Object -First 1
+          if ($exe) { Copy-Item $exe.FullName Edo-Desktop-v1.0-Setup.exe }
+      - name: Upload optional installer
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: Edo-Desktop-v1.0-Setup-Optional
+          path: Edo-Desktop-v1.0-Setup.exe
+          if-no-files-found: ignore
+
+# IMPORTANT: CI builds preview artifacts only.
+# Never overwrite or publish GitHub Release assets automatically.
