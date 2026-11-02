@@ -48,7 +48,7 @@ Only Computer A needs Edo Desktop for this setup. Both PCs must be on the same r
 
 ### Phone ↔ PC
 
-Start Edo Desktop on your computer, then visit its displayed address from your phone's browser. Pair and upload or download files. **No TV needed.**
+Start Edo Desktop on your computer, then visit its displayed address from your phone's browser. Pair and upload or download files.
 
 ### PC or phone ↔ Google TV
 
