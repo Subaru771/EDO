@@ -1,6 +1,6 @@
 # Edo — Every Device. One Connection.
 
-**Free, local-first file sharing for computers, phones, and Google TV.** Send and receive files over your local Wi-Fi or Ethernet network—no cloud account or TV required for computer-to-computer transfers.
+**Free, local-first file sharing for computers, phones, and Google TV.** Send and receive files over your local Wi-Fi or Ethernet network without a cloud account.
 
 [Download Edo v5.4.2](https://github.com/Subaru771/EDO/releases/tag/v5.4.2) · [How to use Edo](#how-to-connect) · [Report a problem](https://github.com/Subaru771/EDO/issues)
 
@@ -14,7 +14,7 @@
 | **[Windows PC — ZIP](https://github.com/Subaru771/EDO/releases/download/v5.4.2/Edo-v5.4.2-Windows-PC.zip)** | Windows 10/11 | Edo Desktop Java application, launcher and setup guide |
 | [All release assets](https://github.com/Subaru771/EDO/releases/latest) | Everyone | Latest published downloads and source archives |
 
-**Windows:** Extract the entire ZIP, install [Java 17 or newer](https://adoptium.net/temurin/releases/) if necessary, then double-click **`Start-Edo-Windows.cmd`**. This is a Java desktop companion, **not a standalone Windows EXE**. A TV is **not** needed.
+**Windows:** Extract the entire ZIP, install [Java 17 or newer](https://adoptium.net/temurin/releases/) if necessary, then double-click **`Start-Edo-Windows.cmd`**. This is a Java desktop companion, **not a standalone Windows EXE**.
 
 **macOS / Linux:** On a computer with Java 17+, extract the same desktop ZIP and run `java -jar Edo-Desktop.jar`. A native Mac or Linux installer is not included.
 
@@ -24,18 +24,18 @@
 
 ## What can connect?
 
-| Transfer | Run Edo on | Connect from | TV needed? |
-| --- | --- | --- | --- |
-| **PC ↔ PC** | One Windows, macOS or Linux computer | Browser on the other computer | **No** |
-| **Phone ↔ PC** | Computer running Edo Desktop | Phone browser | **No** |
-| **PC ↔ TV** | Google TV / Android TV running Edo | Computer browser | Yes |
-| **Phone ↔ TV** | Google TV / Android TV running Edo | Phone browser | Yes |
+| Transfer | Run Edo on | Connect from |
+| --- | --- | --- |
+| **PC ↔ PC** | One Windows, macOS or Linux computer | Browser on the other computer |
+| **Phone ↔ PC** | Computer running Edo Desktop | Phone browser |
+| **PC ↔ TV** | Google TV / Android TV running Edo | Computer browser |
+| **Phone ↔ TV** | Google TV / Android TV running Edo | Phone browser |
 
 **One device hosts; another device connects.** A host can accept uploads and provide downloads through the local browser interface. The host must remain running and reachable on the network.
 
 ## How to connect
 
-### PC ↔ PC — no television required
+### PC ↔ PC
 
 1. On **Computer A**, extract the Windows ZIP and start **Edo Desktop** using `Start-Edo-Windows.cmd` (or `java -jar Edo-Desktop.jar` on macOS/Linux).
 2. Select the folder to share and click **Start sharing**.
