@@ -5,10 +5,11 @@ dir="$(mktemp -d)"
 trap 'rm -rf "$dir"' EXIT
 javac --release 17 -encoding UTF-8 -d "$dir" \
   app/src/main/java/com/dropwave/tv/{LibraryIndex,LanServer,ResumeStore,TransferJournal,TrustRegistry,WebDav,UdpDiscovery,PeerClient}.java \
-  desktop/src/com/dropwave/desktop/{DiskRepository,SyncClient,TwoWaySync,TlsDesktop,SyncTest,TwoWaySyncTest,SecureDavTest,ConnectionSecurityTest}.java \
+  desktop/src/com/dropwave/desktop/{DiskRepository,SharedFileBrowser,SharedFileBrowserTest,SyncClient,TwoWaySync,TlsDesktop,SyncTest,TwoWaySyncTest,SecureDavTest,ConnectionSecurityTest}.java \
   tests/{SmokeTest,AdvancedTest,PeerClientTest,RemoteControlTest,UdpDiscoveryTest,LibraryIndexTest,LegacyPeerClientTest}.java
 java -cp "$dir" SmokeTest
 java -cp "$dir" AdvancedTest
+java -cp "$dir" com.dropwave.desktop.SharedFileBrowserTest
 java -cp "$dir" com.dropwave.desktop.SyncTest
 java -cp "$dir" com.dropwave.desktop.TwoWaySyncTest
 java -cp "$dir" PeerClientTest
