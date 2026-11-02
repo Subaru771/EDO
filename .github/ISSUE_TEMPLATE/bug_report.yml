@@ -1,0 +1,63 @@
+name: Bug report
+description: Report a reproducible problem with Edo v1.0
+title: "[Bug] "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thank you for helping improve Edo. Please **do not post pairing PINs, QR codes, IP addresses, passwords, private file paths, or signing keys**.
+        For suspected security vulnerabilities, use the repository Security policy instead of a public issue.
+  - type: dropdown
+    id: platform
+    attributes:
+      label: Affected platform
+      options:
+        - Windows Desktop
+        - Google TV / Android TV
+        - iPhone / iPad browser
+        - Android browser
+        - macOS / Linux Desktop
+        - Other
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: Edo version or release asset
+      placeholder: "v1.0 / legacy v5.4.2 / filename"
+    validations:
+      required: true
+  - type: textarea
+    id: problem
+    attributes:
+      label: What happened?
+      description: Describe the problem and what you expected.
+      placeholder: "Actual result / expected result"
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      description: Include enough detail for someone else to reproduce the issue.
+      placeholder: "1. Start Edo...\n2. Connect from...\n3. ..."
+    validations:
+      required: true
+  - type: dropdown
+    id: connection
+    attributes:
+      label: Connection mode
+      options:
+        - HTTP on trusted LAN
+        - HTTPS on trusted LAN
+        - Not applicable / unsure
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs or screenshots (optional)
+      description: Remove private addresses, QR tokens, pairing PINs, passwords, and personal filenames.
+    validations:
+      required: false
