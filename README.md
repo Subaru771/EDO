@@ -1,107 +1,68 @@
 # Edo — Every Device. One Connection.
 
-**Free, local-first file sharing for computers, phones, and Google TV.** Send and receive files over your local Wi-Fi or Ethernet network without a cloud account.
+**Local file sharing between PCs, phones and Google TV using a browser as the client.** Transfer directly on your local network without a cloud account.
 
-[Download Edo](https://github.com/Subaru771/EDO/releases/tag/v5.4.2) · [How to use Edo](#how-to-connect) · [Report a problem](https://github.com/Subaru771/EDO/issues)
+[Downloads](#downloads) · [PC-to-PC setup](#pc-to-pc-sharing) · [Security](SECURITY.md) · [Report a bug](https://github.com/Subaru771/EDO/issues)
 
-## Download Edo
+## Downloads
 
-**Choose the device that will host your files.** The other device usually needs only a web browser.
-
-| Download | For | What you get |
+| Platform | Download | Requirements |
 | --- | --- | --- |
-| **[Android TV / Google TV — APK](https://github.com/Subaru771/EDO/releases/download/v5.4.2/app-release.apk)** | Google TV and compatible Android TV devices | Signed Android installation package |
-| **[Windows PC — Edo Desktop v1.0](https://github.com/Subaru771/EDO/releases/download/v5.4.2/Edo-Desktop-v1.0-Windows.zip)** | Windows 10/11 | Redesigned dashboard with native **Your files** browser, launcher and setup guide (**Java 21+) |
-| [All release assets](https://github.com/Subaru771/EDO/releases/latest) | Everyone | Latest published downloads and source archives |
+| Google TV / Android TV | **[Signed APK](https://github.com/Subaru771/EDO/releases/download/v5.4.2/app-release.apk)** | Android TV v5.4.2 |
+| Windows PC | **[Edo Desktop v1.0](https://github.com/Subaru771/EDO/releases/download/v5.4.2/Edo-Desktop-v1.0-Windows.zip)** | Current Java ZIP; **Java 21+** |
+| Windows portable Edo.exe preview | [GitHub Actions build](https://github.com/Subaru771/EDO/actions/workflows/desktop-windows.yml) | Java bundled; test build pending real-device verification |
+| iPhone / Android phone / another PC | Browser | Connect to a running Edo host on the same LAN |
 
-**Windows:** Extract the entire ZIP, install [Java 21 or newer](https://adoptium.net/temurin/releases/?version=21) if necessary, then double-click **`Start-Edo-Windows.vbs`** to launch the modern desktop dashboard. If it does not open, use **`Start-Edo-Windows.cmd`** to see the error. This ZIP is a Java desktop companion, **not a standalone Windows EXE**. Open **Your files** in the sidebar to search, import, create folders, rename, copy/move, and delete items inside the shared folder.
+The public Windows ZIP uses Java 21 and a launcher script. The new portable `Edo.exe` includes its own Java runtime but is **not a verified public release yet**. [Windows installation guide](docs/WINDOWS-SETUP.md)
 
-**macOS / Linux:** On a computer with Java 21+, extract the same desktop ZIP and run `java -jar Edo-Desktop.jar`. The desktop Java app is cross-platform, but native Mac or Linux installers are not included.
+## PC-to-PC sharing
 
-**iPhone / iPad / Android phone:** Open the host's local address using Safari or another compatible browser. No separate phone app is required for browser transfers; a native iOS application has not been released.
+1. On **PC A**, start Edo Desktop, select a folder and click **Start sharing**.
+2. Copy the local URL and PIN shown in Edo.
+3. On **PC B**, open the URL in a web browser and complete pairing.
+4. Upload B → A from **Transfer**, or download A → B from **Files**.
+5. On PC A, organize the shared folder using Edo Desktop's built-in **Your files** browser.
 
-> **Release status:** The signed Android APK and Windows desktop ZIP are publicly available. PC-to-Google TV transfers were tested with a debug APK; separate hardware testing of the production-signed APK and the Windows ZIP is not yet confirmed. Please [report issues](https://github.com/Subaru771/EDO/issues).
+[Full PC-to-PC guide](docs/PC-TO-PC.md) · [Other device combinations](docs/SHARING-GUIDE.md)
 
-## What can connect?
+## PC or phone to Google TV
 
-| Transfer | Run Edo on | Connect from |
-| --- | --- | --- |
-| **PC ↔ PC** | One Windows, macOS or Linux computer | Browser on the other computer |
-| **Phone ↔ PC** | Computer running Edo Desktop | Phone browser |
-| **PC ↔ TV** | Google TV / Android TV running Edo | Computer browser |
-| **Phone ↔ TV** | Google TV / Android TV running Edo | Phone browser |
+1. Open Edo on Google TV and start sharing.
+2. Enter the TV's local address in a browser or scan its QR code from your phone.
+3. Pair and transfer files.
 
-**One device hosts; another device connects.** A host can accept uploads and provide downloads through the local browser interface. The host must remain running and reachable on the network.
+**QR security:** The QR code includes pairing credentials. Anyone who can scan or photograph it may be able to pair, so use TV-side approval for new devices. The published APK may have different defaults than newer main-branch code.
 
-## How to connect
+## Why Edo?
 
-### PC ↔ PC
+- **Google TV-first:** use a phone or PC browser to send files to your TV.
+- **Browser-based client:** the second device doesn't need the full native app.
+- **Desktop file manager:** browse, search, import, rename, copy, move and delete shared files.
+- **Advanced sharing:** optional HTTPS and WebDAV, transfer recovery, and local backup/sync.
 
-1. On **Computer A**, extract the Windows ZIP and start **Edo Desktop** using `Start-Edo-Windows.cmd` (or `java -jar Edo-Desktop.jar` on macOS/Linux).
-2. Select the folder to share and click **Start sharing**.
-3. Note the displayed network address, for example `http://192.168.1.20:8765`, and the pairing PIN.
-4. On **Computer B**, open that exact address in Chrome, Edge, Brave, Safari, or another compatible browser.
-5. Pair using the PIN and approve the connection on Computer A if prompted.
-6. Use **Transfer** to send files **from B to A**, or **Files** to download files **from A to B**. On Computer A, manage the shared folder in Edo Desktop's **Your files** tab.
+[LocalSend](https://localsend.org/) is a mature encrypted native-app alternative. Edo focuses on Google TV hosting and browser clients. **Edo's default HTTP connections are not encrypted.**
 
-Only Computer A needs Edo Desktop for this setup. Both PCs must be on the same reachable local network. For more options, read the [PC-to-PC guide](docs/PC-TO-PC.md) and the [Windows v1.0 quick start](desktop/README-WINDOWS-v1.0.md).
+## Screenshots and interface
 
-### Phone ↔ PC
+Edo Desktop v1.0 has a modern **Share**, **Your files**, **Backup & Sync**, and **Settings** interface. Real UI screenshot capture is being prepared; we won't present mockups as hardware screenshots.
 
-Start Edo Desktop on your computer, then visit its displayed address from your phone's browser. Pair and upload or download files.
+## Privacy and security
 
-### PC or phone ↔ Google TV
+Edo is for **trusted local networks**. Devices must be on reachable Wi-Fi or Ethernet; guest-network isolation or firewalls may block connections.
 
-1. Install [Edo for Android TV](https://github.com/Subaru771/EDO/releases/download/v5.4.2/app-release.apk) and open it on the TV.
-2. Ensure sharing is running. The TV will display an address and connection options.
-3. On your computer, open the TV's local address. On your phone, you can scan the TV's QR code.
-4. Complete pairing if requested, then send or receive files.
+- HTTP is unencrypted. Do not use it on untrusted Wi-Fi or forward its port to the internet.
+- HTTPS is optional and may require trusting a local certificate.
+- PINs, QR links and remembered sessions grant access to the shared folder.
+- Device and feature compatibility vary; no independent audit has been completed.
 
-**Security note:** Scanning the QR code may automatically supply pairing information; treat it as a credential. Enable TV approval for new devices when appropriate.
+[Security policy](SECURITY.md) · [Developer review](docs/SECURITY-REVIEW.md) · [HTTPS guide](SECURE-CONNECTION-GUIDE.md)
 
-[More device combinations and troubleshooting](docs/SHARING-GUIDE.md)
+## Development and releases
 
-## Edo Desktop v1.0
+**Android TV v5.4.2** and **Edo Desktop v1.0** are independent version tracks.
 
-The modern Windows desktop app has dedicated **Share**, **Backup & Sync**, and **Settings** screens, a prominent local connection address and pairing PIN, and quick-copy controls. It uses the same local sharing engine as the previous version.
+GitHub Actions runs tests and builds previews. It **does not automatically replace public downloads**.
 
-## Features
+[Changelog](CHANGELOG.md) · [Contributing](CONTRIBUTING.md) · [MIT License](LICENSE) · [Release policy](docs/RELEASES.md) · [GitHub Releases](https://github.com/Subaru771/EDO/releases)
 
-- Upload and download files through a browser on the local network
-- File and folder browsing, search, previews and ZIP export
-- Transfer progress, resumable transfer functions and retries
-- PIN pairing, remembered devices and optional host approval
-- Optional HTTPS and authenticated WebDAV (certificate setup may be necessary)
-- Device discovery with manual IP-address fallback
-- Built-in **Your files** browser on Edo Desktop v1.0 for local folder management
-- Desktop backup and non-destructive folder synchronization tools
-- A classic native Google TV interface and a separate browser interface
-
-Feature availability can differ by platform, and not every device/browser combination has been verified.
-
-## Network, security and privacy
-
-Edo is designed for **trusted local networks**. The two devices must be able to reach each other; guest-Wi-Fi isolation, firewalls and incorrect IP addresses can prevent connections.
-
-- **HTTP is not encrypted.** Avoid it on untrusted networks.
-- **Do not forward Edo's server port to the public internet.**
-- Optional HTTPS may use a self-signed certificate that requires manual trust.
-- A QR code or remembered session may carry pairing access; use optional host approval for more control.
-
-Read [SECURITY.md](SECURITY.md) and the [secure connection guide](SECURE-CONNECTION-GUIDE.md).
-
-## Documentation and development
-
-- [PC-to-PC setup](docs/PC-TO-PC.md)
-- [All sharing methods](docs/SHARING-GUIDE.md)
-- [Build instructions](BUILDING.md)
-- [Changelog](CHANGELOG-v5.4.2.md)
-- [Project history](docs/PROJECT-HISTORY.md)
-- [GitHub Releases](https://github.com/Subaru771/EDO/releases)
-
-**Versions:** Android TV **v5.4.2** · Edo Desktop **v1.0**. Automated tests cover parts of the transfer engine, but they do not establish universal compatibility. Contributions and bug reports are welcome through [Issues](https://github.com/Subaru771/EDO/issues).
-
----
-
-**Edo — Every Device. One Connection.**  
-*Share locally. Keep it simple.*
+**Edo — Every Device. One Connection.**
