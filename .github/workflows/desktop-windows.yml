@@ -7,6 +7,7 @@ on:
     paths:
       - 'desktop/**'
       - 'scripts/test-all.sh'
+      - 'scripts/verify-brand-assets.py'
       - 'app/src/main/java/com/dropwave/tv/**'
       - 'app/src/main/assets/index.html'
       - '.github/workflows/desktop-windows.yml'
