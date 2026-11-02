@@ -1,0 +1,5 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Security issue or vulnerability
+    url: https://github.com/Subaru771/EDO/blob/main/SECURITY.md
+    about: Read the security policy before disclosing an issue that could affect users.
