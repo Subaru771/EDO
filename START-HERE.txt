@@ -1,0 +1,32 @@
+EDO v5.4 — EVERY DEVICE. ONE CONNECTION.
+
+WHAT CHANGED
+- Classic Google TV two-panel layout is retained.
+- Switching HTTP/HTTPS now restarts the sharing server inside the same Android service.
+- TV has a more visible security status, fingerprint display, public certificate export, and connection guide.
+- Browser UI has a quick connection test and clear transport guide.
+- Strict security origin checks plus a safe, public connection-health endpoint are tested.
+
+BUILD THE GOOGLE TV APK ON WINDOWS
+1. Extract this entire ZIP.
+2. Open the Edo-v5.4 folder.
+3. Double-click BUILD-APK-WINDOWS.cmd.
+4. If successful, APK: app\build\outputs\apk\debug\app-debug.apk
+5. Install over the previous Edo APK only if Android accepts the signing certificate. Keep backups of important files.
+
+The Android build itself has not been verified in this environment.
+
+ENCRYPTED CONNECTION HELP
+TV > Security & Pairing > How to connect with encryption
+TV > Security & Pairing > Certificate fingerprint / export
+See SECURE-CONNECTION-GUIDE.md for all platform limitations.
+
+ANDROID TV CERTIFICATE WARNING
+Self-signed TV certificates may lack a valid IP SAN; iPhone Safari and other browsers may reject HTTPS. A certificate export is NOT a guaranteed fix. Use HTTP only on a trusted LAN if absolutely necessary.
+
+DESKTOP
+Compiled Java 17+ app at desktop\dist\Edo-Desktop.jar. Windows VBS launcher is in the same folder.
+
+TESTS
+bash scripts/test-all.sh
+

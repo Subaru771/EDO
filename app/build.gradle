@@ -1,0 +1,44 @@
+plugins { id 'com.android.application' }
+
+def edoStoreFile = System.getenv('EDO_SIGNING_STORE_FILE')
+def edoStorePassword = System.getenv('EDO_SIGNING_STORE_PASSWORD')
+def edoKeyAlias = System.getenv('EDO_SIGNING_KEY_ALIAS')
+def edoKeyPassword = System.getenv('EDO_SIGNING_KEY_PASSWORD')
+def edoHasSigning = [edoStoreFile, edoStorePassword, edoKeyAlias, edoKeyPassword].every { it != null && !it.isEmpty() }
+
+android {
+    namespace 'com.dropwave.tv'
+    compileSdk 35
+    defaultConfig {
+        // Keep the existing application ID to preserve upgrade compatibility.
+        applicationId 'com.dropwave.tv'
+        minSdk 29
+        // This Play release targets Android TV only. API 34 complies with the
+        // Android TV exception to the 2026 target-level requirement.
+        targetSdk 34
+        versionCode 56
+        versionName '5.4.2'
+    }
+    compileOptions { sourceCompatibility JavaVersion.VERSION_17; targetCompatibility JavaVersion.VERSION_17 }
+    signingConfigs {
+        release {
+            // Credentials are provided at build time. Never commit a keystore.
+            if (edoHasSigning) {
+                storeFile file(edoStoreFile)
+                storePassword edoStorePassword
+                keyAlias edoKeyAlias
+                keyPassword edoKeyPassword
+            }
+        }
+    }
+    buildTypes {
+        debug { }
+        release {
+            minifyEnabled false
+            if (edoHasSigning) signingConfig signingConfigs.release
+        }
+    }
+    packaging { resources { excludes += ['META-INF/**'] } }
+}
+
+dependencies { implementation 'com.google.zxing:core:3.5.3' }
