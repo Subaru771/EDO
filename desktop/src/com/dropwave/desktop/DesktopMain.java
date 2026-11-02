@@ -45,8 +45,9 @@ public final class DesktopMain {
     private static LanServer server;
     private static boolean transitioning = false;
     private static JPanel screenHolder, sidebar;
+    private static FilesPanel filesPanel;
     private static CardLayout screenCards;
-    private static JButton shareNav, syncNav, prefsNav, startButton, stopButton, linkCopy, pinCopy, openBrowser;
+    private static JButton shareNav, filesNav, syncNav, prefsNav, startButton, stopButton, linkCopy, pinCopy, openBrowser;
     private static JTextField folderField, remoteField, pinField, backupField, targetField;
     private static JCheckBox approval, encrypted, automatic, twoWayAuto;
     private static JLabel statusChip, heroStatus, heroAddress, addressLabel, pinLabel, transfersLabel, deviceHint;
@@ -156,6 +157,8 @@ public final class DesktopMain {
         shell.add(createSidebar(), BorderLayout.WEST);
         screenCards = new CardLayout();screenHolder = new JPanel(screenCards);screenHolder.setBackground(BACK);
         screenHolder.add(scroll(createShareScreen()), "share");
+        filesPanel = new FilesPanel(() -> Paths.get(folderField.getText().trim()));
+        screenHolder.add(filesPanel, "files");
         screenHolder.add(scroll(createSyncScreen()), "sync");
         screenHolder.add(scroll(createSettingsScreen()), "prefs");
         shell.add(screenHolder, BorderLayout.CENTER);
@@ -183,9 +186,9 @@ public final class DesktopMain {
         JPanel words = stack(0);words.add(label("edo.", 29, TEXT, Font.BOLD));words.add(label("LOCAL FILE SHARING  ·  v" + APP_VERSION, 9, MUTED, Font.BOLD));logoRow.add(words);
         alignLeft(logoRow);top.add(logoRow);top.add(gap(44));
         JLabel menu = label("WORKSPACE", 10, MUTED, Font.BOLD);menu.setBorder(new EmptyBorder(0, 13, 8, 0));alignLeft(menu);top.add(menu);
-        shareNav = nav("▣   Share files", "share");syncNav=nav("⇄   Backup & sync", "sync");prefsNav=nav("⚙   Settings", "prefs");
-        alignLeft(shareNav);alignLeft(syncNav);alignLeft(prefsNav);
-        top.add(shareNav);top.add(gap(7));top.add(syncNav);top.add(gap(7));top.add(prefsNav);
+        shareNav = nav("▣   Share files", "share");filesNav=nav("▤   Your files", "files");syncNav=nav("⇄   Backup & sync", "sync");prefsNav=nav("⚙   Settings", "prefs");
+        alignLeft(shareNav);alignLeft(filesNav);alignLeft(syncNav);alignLeft(prefsNav);
+        top.add(shareNav);top.add(gap(7));top.add(filesNav);top.add(gap(7));top.add(syncNav);top.add(gap(7));top.add(prefsNav);
         sidebar.add(top, BorderLayout.NORTH);
         JPanel bottom = stack(0);
         JButton guide = nav("?   How it works", "guide");alignLeft(guide);bottom.add(guide);bottom.add(gap(22));
@@ -206,8 +209,9 @@ public final class DesktopMain {
     }
     private static void navigate(String name) {
         screenCards.show(screenHolder,name);
-        for(JButton n: new JButton[]{shareNav,syncNav,prefsNav}) {
-            boolean selected=(name.equals("share")&&n==shareNav)||(name.equals("sync")&&n==syncNav)||(name.equals("prefs")&&n==prefsNav);
+        if(name.equals("files")&&filesPanel!=null) filesPanel.whenShown();
+        for(JButton n: new JButton[]{shareNav,filesNav,syncNav,prefsNav}) {
+            boolean selected=(name.equals("share")&&n==shareNav)||(name.equals("files")&&n==filesNav)||(name.equals("sync")&&n==syncNav)||(name.equals("prefs")&&n==prefsNav);
             n.setForeground(selected? GREEN:MUTED);
             n.setOpaque(selected);n.setBackground(selected?new Color(31,50,48):SIDE);
         }
@@ -257,6 +261,8 @@ public final class DesktopMain {
         folderField=input(pref.get("folder",System.getProperty("user.home")+File.separator+"EdoShare"));
         JButton browse=button("Choose folder",false);browse.addActionListener(e->selectFolder(folderField));
         folderCard.add(fieldWithButton(folderField,browse),BorderLayout.CENTER);
+        JButton seeFiles=button("Open file browser",false);seeFiles.addActionListener(e->navigate("files"));
+        folderCard.add(row(seeFiles),BorderLayout.SOUTH);
         alignLeft(folderCard);p.add(folderCard);p.add(gap(21));
 
         JPanel steps=card(new GridLayout(1,3,13,0));
@@ -425,7 +431,8 @@ public final class DesktopMain {
            +"2. Copy the address and PIN shown on the Share files screen.\n"
            +"3. On PC B, open the address in any compatible browser.\n"
            +"4. Enter the pairing PIN and approve the device on PC A if asked.\n"
-           +"5. Use Transfer to upload to PC A; use Files to download from PC A.\n\n"
+           +"5. Use Transfer to upload to PC A; use Files to download from PC A.\n"
+           +"6. Use Your files inside Edo Desktop to manage the shared folder.\n\n"
            +"PHONE TO PC\n\nStart sharing on the PC; visit its address in the phone browser.\n\n"
            +"PHONE / PC TO GOOGLE TV\n\nStart the Edo TV app, then scan its QR code or open its address.\n\n"
            +"All devices need a reachable local network. HTTP is not encrypted.\n"
