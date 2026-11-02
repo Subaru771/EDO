@@ -11,12 +11,12 @@
 | Download | For | What you get |
 | --- | --- | --- |
 | **[Android TV / Google TV — APK](https://github.com/Subaru771/EDO/releases/download/v5.4.2/app-release.apk)** | Google TV and compatible Android TV devices | Signed Android installation package |
-| **[Windows PC — ZIP](https://github.com/Subaru771/EDO/releases/download/v5.4.2/Edo-v5.4.2-Windows-PC.zip)** | Windows 10/11 | Edo Desktop Java application, launcher and setup guide |
+| **[Windows PC — ZIP](https://github.com/Subaru771/EDO/releases/download/v5.4.2/Edo-v5.4.2-Windows-PC.zip)** | Windows 10/11 | Edo Desktop Java application, launcher and setup guide (**Java 21+ required for this ZIP**) |
 | [All release assets](https://github.com/Subaru771/EDO/releases/latest) | Everyone | Latest published downloads and source archives |
 
-**Windows:** Extract the entire ZIP, install [Java 17 or newer](https://adoptium.net/temurin/releases/) if necessary, then double-click **`Start-Edo-Windows.cmd`**. This is a Java desktop companion, **not a standalone Windows EXE**.
+**Windows:** Extract the entire ZIP, install [Java 21 or newer](https://adoptium.net/temurin/releases/?version=21) if necessary, then double-click **`Start-Edo-Windows.cmd`**. This is a Java desktop companion, **not a standalone Windows EXE**.
 
-**macOS / Linux:** On a computer with Java 17+, extract the same desktop ZIP and run `java -jar Edo-Desktop.jar`. A native Mac or Linux installer is not included.
+**macOS / Linux:** On a computer with Java 21+, extract the same desktop ZIP and run `java -jar Edo-Desktop.jar`. A native Mac or Linux installer is not included.
 
 **iPhone / iPad / Android phone:** Open the host's local address using Safari or another compatible browser. No separate phone app is required for browser transfers; a native iOS application has not been released.
 
