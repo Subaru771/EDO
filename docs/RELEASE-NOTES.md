@@ -1,21 +1,20 @@
 # Edo v1.0 — Every Device. One Connection.
 
-First unified public version for Edo Desktop and Google TV / Android TV.
+The first unified v1.0 release of **Edo for Google TV/Android TV and Edo Desktop for Windows**.
 
 ### Highlights
-- Local PC-to-PC, phone-to-PC and Google TV sharing through a browser.
-- Edo Desktop dashboard with native **Your files** browser.
-- QR/PIN pairing and optional host approval.
-- Local transfers without a cloud account.
-- Optional HTTPS and WebDAV, with local certificate limitations.
+- **Google TV / Android TV** can host local transfers from phones and PCs through their browsers.
+- **Windows desktop host** includes a redesigned dashboard and native **Your files** browser.
+- Local PIN/QR pairing, optional host approval, and optional HTTPS/WebDAV.
+- Share without cloud accounts or uploading files to external servers.
 
 ### Downloads
-- **Edo-v1.0-Android-TV.apk:** production-signed Android TV application.
-- **Edo-Desktop-v1.0-Windows.zip:** Windows desktop companion; Java 21+ required.
-- **SHA256SUMS.txt:** published artifact checksums.
+- **`Edo-v1.0-Android-TV.apk`** — Android TV APK, signed and tested on a Google TV.
+- **`Edo-Desktop-v1.0-Windows-Portable.zip`** — Windows application with **Java bundled**; extract the entire ZIP and open `Edo/Edo.exe`. Tested on a Windows PC.
+- **`SHA256SUMS.txt`** — SHA-256 hashes of both published downloads.
 
-Use these files on trusted local networks. HTTP is unencrypted; do not forward Edo ports to the internet.
+**Compatibility:** Android package ID is `com.dropwave.tv` and Android version code is **57** (visible version **1.0**), preserving the upgrade path from earlier compatible signed releases.
 
-**Compatibility:** The Android package ID remains `com.dropwave.tv`; the Android version code is 57 even though the visible version is 1.0. Updates require the same signing certificate as before.
+**Security:** For trusted LANs only. HTTP is unencrypted; don't port-forward Edo. QR pairing may expose credentials. Windows executable is unsigned and may trigger SmartScreen. Not every device and browser combination has been tested.
 
-Report defects through GitHub Issues. Not all device combinations have been verified.
+[Source](https://github.com/Subaru771/EDO) · [Setup](https://github.com/Subaru771/EDO#quick-start) · [Report a bug](https://github.com/Subaru771/EDO/issues/new/choose)
