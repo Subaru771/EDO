@@ -29,16 +29,19 @@ public final class DiagnosticsActivity extends Activity {
     }
     @Override protected void onCreate(Bundle state){super.onCreate(state);
         LinearLayout view=new LinearLayout(this);view.setOrientation(LinearLayout.VERTICAL);view.setPadding(22,22,22,22);
-        view.setBackgroundColor(Color.rgb(13,20,26));
-        TextView title=new TextView(this);title.setText("Edo · Diagnostics");title.setTextColor(Color.WHITE);title.setTextSize(25);view.addView(title);
+        view.setBackgroundColor(Color.rgb(11,18,27));
+        TextView title=new TextView(this);title.setText("Connection diagnostics");title.setTextColor(Color.rgb(246,250,251));title.setTextSize(32);view.addView(title);
         TextView contents=new TextView(this);contents.setText(report());contents.setTextIsSelectable(true);
-        contents.setTextColor(Color.rgb(198,230,220));contents.setTextSize(14);contents.setPadding(0,18,0,18);
+        contents.setTextColor(Color.rgb(174,194,205));contents.setTextSize(16);contents.setPadding(0,26,0,26);
         ScrollView scroll=new ScrollView(this);scroll.addView(contents);view.addView(scroll,new LinearLayout.LayoutParams(-1,0,1));
-        Button share=new Button(this);share.setText("Share diagnostic report");share.setOnClickListener(v->{
+        Button share=new Button(this);share.setText("Share diagnostic report");share.setAllCaps(false);share.setTextSize(17);
+        share.setBackgroundTintList(android.content.res.ColorStateList.valueOf(Color.rgb(154,242,184)));
+        share.setTextColor(Color.rgb(11,18,27));share.setOnClickListener(v->{
             Intent send=new Intent(Intent.ACTION_SEND);send.setType("text/plain");send.putExtra(Intent.EXTRA_TEXT,report());
             startActivity(Intent.createChooser(send,"Share Edo diagnostics"));
         });view.addView(share);
-        Button close=new Button(this);close.setText("Back to Edo");close.setOnClickListener(v->finish());view.addView(close);
+        Button close=new Button(this);close.setText("Back to Edo");close.setAllCaps(false);close.setTextSize(17);
+        close.setOnClickListener(v->finish());view.addView(close);
         setContentView(view);
     }
 }
