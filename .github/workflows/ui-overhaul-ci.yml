@@ -1,0 +1,77 @@
+name: Edo UI overhaul — build previews
+
+on:
+  push:
+    branches: [design/edo-interface-overhaul]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  desktop-tests:
+    name: Desktop compilation and regression tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+      - name: Compile desktop UI
+        run: bash desktop/build.sh
+      - name: Run transfer, security, and browser syntax tests
+        run: bash scripts/test-all.sh
+
+  windows-preview:
+    name: Windows portable preview
+    needs: desktop-tests
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+      - name: Compile Windows app
+        shell: bash
+        run: bash desktop/build.sh
+      - name: Package portable executable with bundled Java
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Path desktop/installers -Force | Out-Null
+          jpackage --type app-image --name Edo --app-version 1.0 --vendor Edo --input desktop/dist --main-jar Edo-Desktop.jar --main-class com.dropwave.desktop.DesktopMain --icon desktop/resources/edo-icon.ico --dest desktop/installers
+          if ($LASTEXITCODE -ne 0) { throw 'jpackage failed' }
+          Compress-Archive -Path desktop/installers/Edo -DestinationPath Edo-UI-Preview-Windows.zip -CompressionLevel Optimal -Force
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Edo-UI-Preview-Windows
+          path: Edo-UI-Preview-Windows.zip
+          retention-days: 14
+
+  tv-preview:
+    name: Android TV debug preview
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: android-actions/setup-android@v4
+        with:
+          packages: 'platform-tools'
+      - name: Install Android SDK 35
+        run: sdkmanager --install "platforms;android-35" "build-tools;35.0.0"
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.9'
+      - name: Compile TV debug APK
+        run: gradle :app:assembleDebug --no-daemon
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Edo-UI-Preview-Android-TV
+          path: app/build/outputs/apk/debug/app-debug.apk
+          retention-days: 14
