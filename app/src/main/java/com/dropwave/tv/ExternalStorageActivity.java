@@ -15,6 +15,13 @@ import java.util.*;
 /** SAF-based USB/external folder browser. No unrestricted storage permission is needed. */
 public final class ExternalStorageActivity extends Activity {
     private static final int PICK_TREE=6304;
+    private static final int BG=Color.rgb(11,18,27), PANEL=Color.rgb(24,37,49);
+    private static final int BORDER=Color.rgb(61,83,97), WHITE=Color.rgb(246,250,251);
+    private int dp(float v){return (int)(v*getResources().getDisplayMetrics().density+0.5f);}
+    private android.graphics.drawable.GradientDrawable surface(int fill,int border){
+        android.graphics.drawable.GradientDrawable d=new android.graphics.drawable.GradientDrawable();
+        d.setColor(fill);d.setCornerRadius(dp(16));d.setStroke(dp(1),border);return d;
+    }
     private final Handler main=new Handler(Looper.getMainLooper());
     private LinearLayout content;private Uri tree;private String documentId,displayPath="External storage";
     private String exportId;
@@ -22,8 +29,8 @@ public final class ExternalStorageActivity extends Activity {
     private final Deque<String> parentIds=new ArrayDeque<>();
     private final Deque<String> pathStack=new ArrayDeque<>();
     @Override public void onCreate(Bundle state){super.onCreate(state);exportId=getIntent().getStringExtra("exportId");
-        ScrollView scroll=new ScrollView(this);scroll.setBackgroundColor(Color.rgb(8,22,29));content=new LinearLayout(this);content.setOrientation(1);content.setPadding(26,25,26,35);scroll.addView(content);
-        title=new TextView(this);title.setTextSize(27);title.setTextColor(Color.WHITE);content.addView(title);
+        ScrollView scroll=new ScrollView(this);scroll.setBackgroundColor(BG);content=new LinearLayout(this);content.setOrientation(1);content.setPadding(dp(35),dp(32),dp(35),dp(42));scroll.addView(content);
+        title=new TextView(this);title.setTextSize(33);title.setTextColor(WHITE);title.setPadding(0,0,0,dp(18));content.addView(title);
         Button pick=button("Choose USB / external folder",this::chooseTree);content.addView(pick);
         Button back=button("↑  Parent folder",this::up);content.addView(back);
         Button save=button("Copy selected TV file here",this::exportHere);content.addView(save);save.setVisibility(exportId==null?View.GONE:View.VISIBLE);
@@ -32,7 +39,14 @@ public final class ExternalStorageActivity extends Activity {
         if(saved!=null){try{openTree(Uri.parse(saved));}catch(Exception e){title.setText("Choose a USB or external folder");}}
         else title.setText("Choose a USB or external folder");
     }
-    private Button button(String name,Runnable handler){Button b=new Button(this);b.setAllCaps(false);b.setText(name);b.setFocusable(true);b.setOnClickListener(v->handler.run());return b;}
+    private Button button(String name,Runnable handler){
+        Button b=new Button(this);b.setAllCaps(false);b.setText(name);b.setFocusable(true);
+        b.setTextSize(16);b.setTextColor(WHITE);b.setPadding(dp(16),dp(14),dp(16),dp(14));
+        b.setBackground(surface(PANEL,BORDER));
+        LinearLayout.LayoutParams lp=new LinearLayout.LayoutParams(-1,-2);lp.setMargins(0,0,0,dp(10));b.setLayoutParams(lp);
+        b.setOnFocusChangeListener((v,focus)->{b.setBackground(surface(focus?WHITE:PANEL,focus?WHITE:BORDER));b.setTextColor(focus?BG:WHITE);});
+        b.setOnClickListener(v->handler.run());return b;
+    }
     private void chooseTree(){try{Intent i=new Intent(Intent.ACTION_OPEN_DOCUMENT_TREE);
         i.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION|Intent.FLAG_GRANT_WRITE_URI_PERMISSION|
             Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION|Intent.FLAG_GRANT_PREFIX_URI_PERMISSION);
