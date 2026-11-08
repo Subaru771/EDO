@@ -1,4 +1,4 @@
-name: Build signed Edo v1.0 Android TV release
+name: Edo • Signed Android release
 
 on:
   workflow_dispatch:
@@ -72,7 +72,7 @@ jobs:
             app/build/outputs/bundle/release/app-release.aab
             SHA256SUMS-ANDROID.txt
           if-no-files-found: error
-          retention-days: 30
+          retention-days: 3
       - name: Require explicit real-device confirmation
         if: ${{ inputs.publish_release }}
         run: |
