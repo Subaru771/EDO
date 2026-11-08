@@ -50,14 +50,14 @@ jobs:
       - name: Compile Android TV
         run: gradle :app:assembleDebug --no-daemon
       # Upload only on demand, avoiding storage use on every push or PR.
-      - name: Downloadable debug APK (manual builds only)
-        if: ${{ github.event_name == 'workflow_dispatch' }}
+      - name: Downloadable Android TV APK (manual build or Edo Compact preview)
+        if: ${{ github.event_name == 'workflow_dispatch' || (github.event_name == 'pull_request' && github.head_ref == 'design/edo-compact-v2') }}
         uses: actions/upload-artifact@v4
         with:
-          name: Edo-Android-TV-Debug
+          name: Edo-Compact-Android-TV-Debug
           path: app/build/outputs/apk/debug/app-debug.apk
           if-no-files-found: error
-          retention-days: 3
+          retention-days: 1
 
   windows:
     name: Windows portable EXE (manual builds only)
