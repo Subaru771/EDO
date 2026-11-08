@@ -33,7 +33,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 
-/** Native, D-pad accessible browser for received content under Downloads/DropWave. */
+/** Native, D-pad accessible browser for Edo downloads (and readable legacy files). */
 public final class ReceivedFilesActivity extends Activity {
     private static final int BG=Color.rgb(16,21,26), PANEL=Color.rgb(25,33,39);
     private static final int BORDER=Color.rgb(52,67,75), WHITE=Color.rgb(242,246,247);
@@ -269,19 +269,40 @@ public final class ReceivedFilesActivity extends Activity {
         }catch(Exception ex){toast("Could not open file: "+ex.getMessage());}
     }
     private void options(LanServer.Entry e){
-        String[] menu={category(e).equals("APK")?"Install APK":"Open / Preview", "Send to nearby Edo", "Copy to USB / external", "File details", "Rename", "Move to folder", "Delete"};
-        new AlertDialog.Builder(this).setTitle(e.name).setItems(menu,(d,choice)->{
-            if(choice==0)openFile(e);
-            else if(choice==1){Intent intent=new Intent(this,PeerDiscoveryActivity.class);intent.putExtra("fileId",e.id);startActivity(intent);}
-            else if(choice==2){Intent i=new Intent(this,ExternalStorageActivity.class);i.putExtra("exportId",e.id);startActivity(i);}
-            else if(choice==3)details(e);
-            else if(choice==4)rename(e);
-            else if(choice==5)move(e);
-            else if(choice==6)delete(e);
-        }).setNegativeButton("Cancel",null).show();
+        String[] choices={category(e).equals("APK")?"Install APK":"Open / Preview",
+            "Send to Edo","Copy to USB","Details","Rename","Move","Delete"};
+        LinearLayout grid=column();
+        grid.setPadding(dp(12),dp(8),dp(12),dp(5));
+        AlertDialog dialog=new AlertDialog.Builder(this).setTitle(e.name)
+            .setView(grid).setNegativeButton("Close",null).create();
+        for(int i=0;i<choices.length;i+=2){
+            LinearLayout row=new LinearLayout(this);row.setOrientation(LinearLayout.HORIZONTAL);
+            for(int j=i;j<Math.min(i+2,choices.length);j++){
+                final int choice=j;
+                TextView option=button(choices[j],()->{
+                    dialog.dismiss();
+                    if(choice==0)openFile(e);
+                    else if(choice==1){Intent intent=new Intent(this,PeerDiscoveryActivity.class);intent.putExtra("fileId",e.id);startActivity(intent);}
+                    else if(choice==2){Intent intent=new Intent(this,ExternalStorageActivity.class);intent.putExtra("exportId",e.id);startActivity(intent);}
+                    else if(choice==3)details(e);
+                    else if(choice==4)rename(e);
+                    else if(choice==5)move(e);
+                    else if(choice==6)delete(e);
+                });
+                option.setTextSize(14);option.setMinHeight(dp(48));
+                LinearLayout.LayoutParams p=new LinearLayout.LayoutParams(0,-2,1);
+                p.setMargins(0,0,j==i?dp(7):0,0);
+                row.addView(option,p);
+            }
+            if(i+1>=choices.length)row.addView(new View(this),new LinearLayout.LayoutParams(0,dp(1),1));
+            grid.addView(row,new LinearLayout.LayoutParams(-1,-2));
+            space(grid,7);
+        }
+        dialog.show();
     }
     private void details(LanServer.Entry e){
-        String path="Downloads/DropWave/"+(e.folder.isEmpty()?"":e.folder+"/")+e.name;
+        String base="Legacy TV downloads".equals(e.source)?"Downloads/DropWave/":"Downloads/Edo/";
+        String path=base+(e.folder.isEmpty()?"":e.folder+"/")+e.name;
         new AlertDialog.Builder(this).setTitle("File information")
             .setMessage("Name: "+e.name+"\nType: "+category(e)+"\nSize: "+formatSize(e.size)+"\nMIME: "+e.mime+"\nLocation: "+path)
             .setPositiveButton("Open",(d,w)->openFile(e)).setNegativeButton("Close",null).show();
@@ -296,7 +317,7 @@ public final class ReceivedFilesActivity extends Activity {
     }
     private void move(LanServer.Entry e){
         List<String> folders=new ArrayList<>();folders.add("");folders.addAll(allFolders);
-        String[] labels=new String[folders.size()];for(int i=0;i<folders.size();i++)labels[i]=folders.get(i).isEmpty()?"Downloads / DropWave (root)":folders.get(i);
+        String[] labels=new String[folders.size()];for(int i=0;i<folders.size();i++)labels[i]=folders.get(i).isEmpty()?"Downloads / Edo (root)":folders.get(i);
         new AlertDialog.Builder(this).setTitle("Move to folder").setItems(labels,(d,which)->{
             try{new AndroidFiles(this).move(e.id,folders.get(which));reload();}
             catch(Exception ex){toast("Move failed: "+ex.getMessage());}
