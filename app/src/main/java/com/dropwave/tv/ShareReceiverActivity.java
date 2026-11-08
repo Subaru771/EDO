@@ -2,6 +2,7 @@ package com.dropwave.tv;
 
 import android.app.*;
 import android.content.*;
+import android.graphics.Color;
 import android.net.Uri;
 import android.os.*;
 import android.view.*;
@@ -11,11 +12,13 @@ import java.util.*;
 /** Native Android Share Sheet entry; copied files persist beyond the temporary URI permission. */
 public final class ShareReceiverActivity extends Activity {
     private TextView message;
+    private int dp(float n){return (int)(n*getResources().getDisplayMetrics().density+0.5f);}
     private final Handler main=new Handler(Looper.getMainLooper());
     @Override public void onCreate(Bundle state){super.onCreate(state);getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
-        LinearLayout root=new LinearLayout(this);root.setOrientation(1);root.setPadding(35,55,35,35);
-        TextView brand=new TextView(this);brand.setText("edo.  ·  Receiving files");brand.setTextSize(27);root.addView(brand);
-        message=new TextView(this);message.setText("Preparing incoming files…");message.setTextSize(18);message.setPadding(0,25,0,25);root.addView(message);
+        LinearLayout root=new LinearLayout(this);root.setOrientation(1);root.setPadding(dp(24),dp(22),dp(24),dp(22));root.setBackgroundColor(Color.rgb(16,21,26));
+        getWindow().setStatusBarColor(Color.rgb(16,21,26));getWindow().setNavigationBarColor(Color.rgb(16,21,26));
+        TextView brand=new TextView(this);brand.setText("edo.  /  Import files");brand.setTextSize(25);brand.setTextColor(Color.rgb(242,246,247));root.addView(brand);
+        message=new TextView(this);message.setText("Preparing incoming files…");message.setTextSize(15);message.setTextColor(Color.rgb(172,190,199));message.setPadding(0,dp(14),0,dp(14));root.addView(message);
         setContentView(root);
         Intent intent=getIntent();List<Uri> received=new ArrayList<>();
         if(Intent.ACTION_SEND_MULTIPLE.equals(intent.getAction())){
@@ -39,7 +42,7 @@ public final class ShareReceiverActivity extends Activity {
             final int complete=ok;final String failures=error;
             main.post(()->{
                 message.setText(complete+" / "+received.size()+" files saved to Edo Downloads."+(failures.isEmpty()?"":"\nLast issue: "+failures));
-                Button done=new Button(this);done.setText("Open Edo");done.setOnClickListener(v->{startActivity(new Intent(this,MainActivity.class));finish();});
+                Button done=new Button(this);done.setText("Open Edo");done.setAllCaps(false);done.setTextSize(15);done.setTextColor(Color.rgb(12,36,24));done.setBackgroundTintList(android.content.res.ColorStateList.valueOf(Color.rgb(163,229,192)));done.setOnClickListener(v->{startActivity(new Intent(this,MainActivity.class));finish();});
                 ((LinearLayout)message.getParent()).addView(done);
             });
         },"edo-share-import").start();

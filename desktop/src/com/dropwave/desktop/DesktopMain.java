@@ -22,16 +22,17 @@ import java.util.prefs.Preferences;
 /** Edo Desktop: LAN transfer host with a responsive native desktop dashboard. */
 public final class DesktopMain {
     private static final String APP_VERSION = "1.0";
-    private static final Color BACK = new Color(11, 20, 28);
-    private static final Color SIDE = new Color(13, 24, 32);
-    private static final Color PANEL = new Color(21, 35, 45);
-    private static final Color PANEL2 = new Color(27, 44, 55);
-    private static final Color LINE = new Color(47, 68, 78);
-    private static final Color TEXT = new Color(239, 247, 247);
-    private static final Color MUTED = new Color(152, 171, 178);
-    private static final Color GREEN = new Color(186, 250, 107);
-    private static final Color DARK_GREEN = new Color(22, 45, 30);
-    private static final Color DANGER = new Color(252, 141, 137);
+    // Edo 2 design system: crisp midnight surfaces and a single unmistakable mint action.
+    private static final Color BACK = new Color(16, 21, 26);
+    private static final Color SIDE = new Color(22, 29, 35);
+    private static final Color PANEL = new Color(25, 33, 39);
+    private static final Color PANEL2 = new Color(36, 48, 57);
+    private static final Color LINE = new Color(52, 67, 75);
+    private static final Color TEXT = new Color(246, 250, 251);
+    private static final Color MUTED = new Color(158, 178, 190);
+    private static final Color GREEN = new Color(163, 229, 192);
+    private static final Color DARK_GREEN = new Color(18, 55, 44);
+    private static final Color DANGER = new Color(255, 146, 151);
 
     private static final Preferences pref = Preferences.userNodeForPackage(DesktopMain.class);
     private static final ExecutorService workers = Executors.newSingleThreadExecutor(r -> {
@@ -84,10 +85,10 @@ public final class DesktopMain {
     private static void alignLeft(JComponent c) { c.setAlignmentX(Component.LEFT_ALIGNMENT); }
     private static JTextField input(String initial) {
         JTextField f = new JTextField(initial);
-        f.setFont(font(13, Font.PLAIN));f.setBackground(PANEL2);f.setForeground(TEXT);f.setCaretColor(GREEN);
-        f.setSelectionColor(new Color(74, 106, 67));f.setSelectedTextColor(TEXT);
-        f.setBorder(BorderFactory.createCompoundBorder(new RoundBorder(12, LINE), new EmptyBorder(11, 13, 11, 13)));
-        f.setPreferredSize(new Dimension(180, 44));
+        f.setFont(font(14, Font.PLAIN));f.setBackground(PANEL2);f.setForeground(TEXT);f.setCaretColor(GREEN);
+        f.setSelectionColor(new Color(54, 103, 88));f.setSelectedTextColor(TEXT);
+        f.setBorder(BorderFactory.createCompoundBorder(new RoundBorder(11, LINE), new EmptyBorder(9, 12, 9, 12)));
+        f.setPreferredSize(new Dimension(165, 39));
         return f;
     }
     private static JCheckBox toggle(String title, boolean initial) {
@@ -101,10 +102,10 @@ public final class DesktopMain {
         b.setFont(font(13, Font.BOLD));b.setForeground(primary ? BACK : TEXT);
         b.setBackground(primary ? GREEN : PANEL2);b.setOpaque(false);b.setFocusPainted(false);
         b.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-        b.setBorder(new EmptyBorder(12, 18, 12, 18));
+        b.setBorder(new EmptyBorder(9, 13, 9, 13));
         b.setUI(new javax.swing.plaf.basic.BasicButtonUI());
         b.setContentAreaFilled(false);
-        b.setPreferredSize(new Dimension(Math.max(108, name.length() * 9 + 26), 43));
+        b.setPreferredSize(new Dimension(Math.max(96, name.length() * 8 + 27), 39));
         b.putClientProperty("primary", primary);
         b.addMouseListener(new MouseAdapter() {
             public void mouseEntered(MouseEvent e) { b.repaint(); }
@@ -119,8 +120,8 @@ public final class DesktopMain {
         return p;
     }
     private static JPanel card(LayoutManager lm) {
-        JPanel p = new RoundedPanel(PANEL, 20);p.setLayout(lm);
-        p.setBorder(new EmptyBorder(22, 24, 22, 24));
+        JPanel p = new RoundedPanel(PANEL, 14);p.setLayout(lm);
+        p.setBorder(new EmptyBorder(17, 19, 17, 19));
         return p;
     }
     private static JPanel row(Component... comps) {
@@ -139,9 +140,11 @@ public final class DesktopMain {
         return p;
     }
     private static JPanel content(String header, String subheading) {
-        JPanel p = stack(0);p.setBorder(new EmptyBorder(28, 32, 36, 32));
-        JLabel title = label(header, 27, TEXT, Font.BOLD);alignLeft(title);p.add(title);p.add(gap(7));
-        JLabel detail = label(subheading, 13, MUTED);alignLeft(detail);p.add(detail);p.add(gap(25));
+        JPanel p = stack(0);p.setBorder(new EmptyBorder(22, 25, 24, 25));
+        JLabel eyebrow = label("EDO  /  LOCAL", 10, GREEN, Font.BOLD);
+        alignLeft(eyebrow);p.add(eyebrow);p.add(gap(7));
+        JLabel title = label(header, 25, TEXT, Font.BOLD);alignLeft(title);p.add(title);p.add(gap(6));
+        JLabel detail = label(subheading, 12, MUTED);alignLeft(detail);p.add(detail);p.add(gap(17));
         return p;
     }
 
@@ -152,22 +155,41 @@ public final class DesktopMain {
             if (stream != null) frame.setIconImage(ImageIO.read(stream));
         } catch (Exception ignored) {}
         frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
-        frame.setSize(1160, 810);frame.setMinimumSize(new Dimension(870, 640));frame.setLocationRelativeTo(null);
+        // Fit inside the usable desktop area (excluding the taskbar) on smaller screens.
+        Rectangle workArea = GraphicsEnvironment.getLocalGraphicsEnvironment().getMaximumWindowBounds();
+        int initialWidth = Math.min(1230, workArea.width);
+        int initialHeight = Math.min(835, workArea.height);
+        frame.setMinimumSize(new Dimension(Math.min(800, workArea.width), Math.min(560, workArea.height)));
+        frame.setSize(initialWidth, initialHeight);
+        frame.setLocation(workArea.x + (workArea.width - initialWidth) / 2,
+                          workArea.y + (workArea.height - initialHeight) / 2);
         JPanel shell = new JPanel(new BorderLayout());shell.setBackground(BACK);
-        shell.add(createSidebar(), BorderLayout.WEST);
+        JPanel navigation = createSidebar();
         screenCards = new CardLayout();screenHolder = new JPanel(screenCards);screenHolder.setBackground(BACK);
         screenHolder.add(scroll(createShareScreen()), "share");
         filesPanel = new FilesPanel(() -> Paths.get(folderField.getText().trim()));
         screenHolder.add(filesPanel, "files");
         screenHolder.add(scroll(createSyncScreen()), "sync");
         screenHolder.add(scroll(createSettingsScreen()), "prefs");
-        shell.add(screenHolder, BorderLayout.CENTER);
+        JSplitPane workspace = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, navigation, screenHolder);
+        workspace.setBorder(null);workspace.setContinuousLayout(true);
+        workspace.setDividerSize(5);workspace.setBackground(BACK);
+        workspace.setResizeWeight(0.0);
+        int savedWidth = Math.max(166, Math.min(310, pref.getInt("navWidth", 190)));
+        shell.add(workspace, BorderLayout.CENTER);
         frame.setContentPane(shell);
         navigate("share");
         updateStatus();
         poller.scheduleAtFixedRate(() -> SwingUtilities.invokeLater(DesktopMain::updateStatus), 2, 2, TimeUnit.SECONDS);
         poller.scheduleAtFixedRate(() -> SwingUtilities.invokeLater(DesktopMain::automaticSync), 10, 10, TimeUnit.MINUTES);
         frame.setVisible(true);
+        // Restore only after Swing has laid out the split pane; do not overwrite the
+        // saved preference with the temporary divider position from initial layout.
+        workspace.setDividerLocation(savedWidth);
+        workspace.addPropertyChangeListener(JSplitPane.DIVIDER_LOCATION_PROPERTY, e -> {
+            int width = workspace.getDividerLocation();
+            if (width >= 166 && width <= 310) pref.putInt("navWidth", width);
+        });
     }
     private static JScrollPane scroll(JPanel p) {
         JScrollPane s = new JScrollPane(p);s.setBorder(null);s.setOpaque(false);s.getViewport().setBackground(BACK);
@@ -176,33 +198,46 @@ public final class DesktopMain {
     }
     private static JPanel createSidebar() {
         sidebar = new JPanel(new BorderLayout());sidebar.setBackground(SIDE);
-        sidebar.setPreferredSize(new Dimension(228, 0));
-        sidebar.setBorder(new EmptyBorder(28, 14, 20, 14));
+        sidebar.setMinimumSize(new Dimension(166, 0));
+        sidebar.setPreferredSize(new Dimension(190, 0));
+        sidebar.setBorder(new EmptyBorder(23, 11, 16, 11));
         JPanel top = stack(0);
-        JPanel logoRow = row();logoRow.setBorder(new EmptyBorder(0, 10, 0, 0));
+        JPanel logoRow = row();logoRow.setBorder(new EmptyBorder(0, 8, 0, 0));
         try(InputStream in = DesktopMain.class.getResourceAsStream("/edo-icon.png")) {
-            if(in != null) {Image im = ImageIO.read(in).getScaledInstance(40, 40, Image.SCALE_SMOOTH);logoRow.add(new JLabel(new ImageIcon(im)));}
+            if(in != null) {Image im = ImageIO.read(in).getScaledInstance(31, 31, Image.SCALE_SMOOTH);logoRow.add(new JLabel(new ImageIcon(im)));}
         } catch(IOException ignored) {}
-        JPanel words = stack(0);words.add(label("edo.", 29, TEXT, Font.BOLD));words.add(label("LOCAL FILE SHARING  ·  v" + APP_VERSION, 9, MUTED, Font.BOLD));logoRow.add(words);
-        alignLeft(logoRow);top.add(logoRow);top.add(gap(44));
-        JLabel menu = label("WORKSPACE", 10, MUTED, Font.BOLD);menu.setBorder(new EmptyBorder(0, 13, 8, 0));alignLeft(menu);top.add(menu);
-        shareNav = nav("▣   Share files", "share");filesNav=nav("▤   Your files", "files");syncNav=nav("⇄   Backup & sync", "sync");prefsNav=nav("⚙   Settings", "prefs");
+        JPanel words = stack(0);words.add(label("edo.", 27, TEXT, Font.BOLD));words.add(label("LOCAL SHARING", 10, MUTED, Font.BOLD));logoRow.add(words);
+        alignLeft(logoRow);top.add(logoRow);top.add(gap(28));
+        JLabel menu = label("WORKSPACE", 10, MUTED, Font.BOLD);menu.setBorder(new EmptyBorder(0, 12, 9, 0));alignLeft(menu);top.add(menu);
+        shareNav = nav("⌂  Share", "share");filesNav=nav("▤  Files", "files");syncNav=nav("⇄  Sync", "sync");prefsNav=nav("⚙  Settings", "prefs");
         alignLeft(shareNav);alignLeft(filesNav);alignLeft(syncNav);alignLeft(prefsNav);
-        top.add(shareNav);top.add(gap(7));top.add(filesNav);top.add(gap(7));top.add(syncNav);top.add(gap(7));top.add(prefsNav);
+        top.add(shareNav);top.add(gap(3));top.add(filesNav);top.add(gap(3));top.add(syncNav);top.add(gap(3));top.add(prefsNav);
         sidebar.add(top, BorderLayout.NORTH);
         JPanel bottom = stack(0);
-        JButton guide = nav("?   How it works", "guide");alignLeft(guide);bottom.add(guide);bottom.add(gap(22));
-        JPanel pill = new RoundedPanel(new Color(25, 45, 41), 14);pill.setLayout(new BorderLayout());pill.setBorder(new EmptyBorder(12, 13, 12, 10));
-        pill.add(label("●  LOCAL-FIRST", 10, GREEN, Font.BOLD),BorderLayout.NORTH);
-        pill.add(label("Your files stay on your network", 10, MUTED),BorderLayout.SOUTH);
+        JButton guide = nav("?  Help", "guide");alignLeft(guide);bottom.add(guide);bottom.add(gap(10));
+        JPanel pill = new RoundedPanel(PANEL2, 12);pill.setLayout(new BorderLayout(0, 4));pill.setBorder(new EmptyBorder(12, 10, 12, 10));
+        pill.add(label("●  LOCAL ONLY", 10, GREEN, Font.BOLD),BorderLayout.NORTH);
+        pill.add(label("No cloud account", 10, MUTED),BorderLayout.SOUTH);
         alignLeft(pill);bottom.add(pill);
         sidebar.add(bottom,BorderLayout.SOUTH);
         return sidebar;
     }
     private static JButton nav(String text, String dest) {
-        JButton b = new JButton(text);b.setFont(font(13, Font.BOLD));b.setHorizontalAlignment(SwingConstants.LEFT);
+        JButton b = new JButton(text) {
+            @Override protected void paintComponent(Graphics g) {
+                if (Boolean.TRUE.equals(getClientProperty("active"))) {
+                    Graphics2D g2 = (Graphics2D) g.create();
+                    g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+                    g2.setColor(new Color(44, 67, 61));
+                    g2.fillRoundRect(1, 1, getWidth()-2, getHeight()-2, 12, 12);
+                    g2.dispose();
+                }
+                super.paintComponent(g);
+            }
+        };
+        b.setFont(font(13, Font.BOLD));b.setHorizontalAlignment(SwingConstants.LEFT);
         b.setForeground(MUTED);b.setContentAreaFilled(false);b.setOpaque(false);
-        b.setFocusPainted(false);b.setBorder(new EmptyBorder(13,14,13,8));b.setMaximumSize(new Dimension(Integer.MAX_VALUE,47));
+        b.setFocusPainted(false);b.setBorder(new EmptyBorder(11,12,11,7));b.setMaximumSize(new Dimension(Integer.MAX_VALUE,42));
         b.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
         if(dest.equals("guide")) b.addActionListener(e->showSharingGuide());else b.addActionListener(e->navigate(dest));
         return b;
@@ -212,41 +247,39 @@ public final class DesktopMain {
         if(name.equals("files")&&filesPanel!=null) filesPanel.whenShown();
         for(JButton n: new JButton[]{shareNav,filesNav,syncNav,prefsNav}) {
             boolean selected=(name.equals("share")&&n==shareNav)||(name.equals("files")&&n==filesNav)||(name.equals("sync")&&n==syncNav)||(name.equals("prefs")&&n==prefsNav);
-            n.setForeground(selected? GREEN:MUTED);
-            n.setOpaque(selected);n.setBackground(selected?new Color(31,50,48):SIDE);
+            n.setForeground(selected? TEXT:MUTED);
+            n.setOpaque(false);n.putClientProperty("active", selected);
+            n.repaint();
         }
     }
     private static JPanel createShareScreen() {
-        JPanel p = content("Share your files", "One connection, all your devices. Secure local sharing without cloud uploads.");
-        JPanel hero = new RoundedPanel(new Color(25, 49, 49), 22);
-        hero.setLayout(new BorderLayout(18, 12));hero.setBorder(new EmptyBorder(25, 28, 25, 27));
+        JPanel p = content("Share files", "Connect phones, PCs and TVs on the same local network.");
+        JPanel hero = new RoundedPanel(PANEL, 14);
+        hero.setLayout(new BorderLayout(14, 8));hero.setBorder(new EmptyBorder(17, 19, 17, 19));
         JPanel heroLeft = stack(0);
-        JLabel eyebrow=label("YOUR SHARING SPACE", 10, GREEN, Font.BOLD);alignLeft(eyebrow);heroLeft.add(eyebrow);heroLeft.add(gap(10));
-        JLabel mainTitle=label("Ready when you are.", 26, TEXT, Font.BOLD);alignLeft(mainTitle);heroLeft.add(mainTitle);heroLeft.add(gap(10));
-        JLabel subline1=label("Start Edo here. Connect from another PC or phone", 13, MUTED);
-        JLabel subline2=label("using its browser. Keep this window open.", 13, MUTED);
-        alignLeft(subline1);alignLeft(subline2);heroLeft.add(subline1);heroLeft.add(subline2);heroLeft.add(gap(20));
+        JLabel eyebrow=label("SHARING", 10, GREEN, Font.BOLD);alignLeft(eyebrow);heroLeft.add(eyebrow);heroLeft.add(gap(7));
+        JLabel mainTitle=label("Share from this PC", 21, TEXT, Font.BOLD);alignLeft(mainTitle);heroLeft.add(mainTitle);heroLeft.add(gap(7));
+        heroStatus=label("●  NOT SHARING", 11, GREEN, Font.BOLD);alignLeft(heroStatus);heroLeft.add(heroStatus);heroLeft.add(gap(12));
         startButton = button("▶  Start sharing", true);stopButton = button("■  Stop", false);
         stopButton.setEnabled(false);JPanel heroButtons=row(startButton,stopButton);alignLeft(heroButtons);heroLeft.add(heroButtons);
-        JPanel graphic = new NetworkGraphic();graphic.setPreferredSize(new Dimension(178, 145));graphic.setOpaque(false);
-        hero.add(heroLeft,BorderLayout.CENTER);hero.add(graphic,BorderLayout.EAST);
-        alignLeft(hero);p.add(hero);p.add(gap(21));
+        hero.add(heroLeft,BorderLayout.CENTER);
+        alignLeft(hero);p.add(hero);p.add(gap(13));
 
-        JPanel connection = card(new BorderLayout(0,18));
+        JPanel connection = card(new BorderLayout(0,12));
         JPanel ctop = new JPanel(new BorderLayout());ctop.setOpaque(false);
-        ctop.add(column("Your connection", "Share this address with another device on your network"), BorderLayout.WEST);
+        ctop.add(column("Connect a device", "Scan, paste the address, or enter the six-digit PIN"), BorderLayout.WEST);
         statusChip = label("●  OFFLINE", 11, MUTED, Font.BOLD);ctop.add(statusChip,BorderLayout.EAST);
         connection.add(ctop,BorderLayout.NORTH);
-        JPanel connectionBody = new JPanel(new GridLayout(1,2,18,0));connectionBody.setOpaque(false);
-        JPanel addrCard = new RoundedPanel(PANEL2,15);addrCard.setLayout(new BorderLayout(0,12));addrCard.setBorder(new EmptyBorder(17,18,17,18));
-        addrCard.add(label("CONNECTION ADDRESS",10,MUTED,Font.BOLD),BorderLayout.NORTH);
+        JPanel connectionBody = new JPanel(new GridLayout(1,2,10,0));connectionBody.setOpaque(false);
+        JPanel addrCard = new RoundedPanel(PANEL2,11);addrCard.setLayout(new BorderLayout(0,9));addrCard.setBorder(new EmptyBorder(12,13,12,13));
+        addrCard.add(label("LOCAL ADDRESS",10,GREEN,Font.BOLD),BorderLayout.NORTH);
         addressLabel=label(OFFLINE_URL,15,TEXT,Font.BOLD);addressLabel.setToolTipText(OFFLINE_URL);
         addrCard.add(addressLabel,BorderLayout.CENTER);
         JPanel addrButtons=row();linkCopy=button("Copy address",false);openBrowser=button("Open in browser",false);
         addrButtons.add(linkCopy);addrButtons.add(openBrowser);addrCard.add(addrButtons,BorderLayout.SOUTH);
-        JPanel pinCard = new RoundedPanel(PANEL2,15);pinCard.setLayout(new BorderLayout(0,9));pinCard.setBorder(new EmptyBorder(17,18,17,18));
-        pinCard.add(label("PAIRING PIN",10,MUTED,Font.BOLD),BorderLayout.NORTH);
-        pinLabel=label("— — — — — —",29,GREEN,Font.BOLD);pinLabel.setFont(new Font(Font.MONOSPACED,Font.BOLD,29));
+        JPanel pinCard = new RoundedPanel(PANEL2,11);pinCard.setLayout(new BorderLayout(0,7));pinCard.setBorder(new EmptyBorder(12,13,12,13));
+        pinCard.add(label("SIX-DIGIT ACCESS CODE",10,GREEN,Font.BOLD),BorderLayout.NORTH);
+        pinLabel=label("— — — — — —",23,GREEN,Font.BOLD);pinLabel.setFont(new Font(Font.MONOSPACED,Font.BOLD,23));
         pinCard.add(pinLabel,BorderLayout.CENTER);pinCopy=button("Copy PIN",false);JPanel pb=row(pinCopy);pinCard.add(pb,BorderLayout.SOUTH);
         connectionBody.add(addrCard);connectionBody.add(pinCard);
         connection.add(connectionBody,BorderLayout.CENTER);
@@ -254,22 +287,16 @@ public final class DesktopMain {
         transfersLabel=label("Active transfers  0",12,MUTED);cfoot.add(transfersLabel,BorderLayout.WEST);
         deviceHint=label("Waiting for sharing to start",12,MUTED);cfoot.add(deviceHint,BorderLayout.EAST);
         connection.add(cfoot,BorderLayout.SOUTH);
-        alignLeft(connection);p.add(connection);p.add(gap(21));
+        alignLeft(connection);p.add(connection);p.add(gap(13));
 
         JPanel folderCard=card(new BorderLayout(0,15));
-        folderCard.add(column("Folder to share", "Only selected files become accessible to paired devices."),BorderLayout.NORTH);
+        folderCard.add(column("Choose what to share", "Only files inside this folder are visible to paired devices."),BorderLayout.NORTH);
         folderField=input(pref.get("folder",System.getProperty("user.home")+File.separator+"EdoShare"));
         JButton browse=button("Choose folder",false);browse.addActionListener(e->selectFolder(folderField));
         folderCard.add(fieldWithButton(folderField,browse),BorderLayout.CENTER);
         JButton seeFiles=button("Open file browser",false);seeFiles.addActionListener(e->navigate("files"));
         folderCard.add(row(seeFiles),BorderLayout.SOUTH);
-        alignLeft(folderCard);p.add(folderCard);p.add(gap(21));
-
-        JPanel steps=card(new GridLayout(1,3,13,0));
-        for(String[] step:new String[][]{{"01", "Choose a folder", "Pick what you want to share"},{"02", "Start sharing", "Copy the address and PIN"},{"03", "Connect & transfer", "Open Edo on another device"}}){
-            JPanel bit=stack(0);bit.add(label(step[0],13,GREEN,Font.BOLD));bit.add(gap(8));bit.add(label(step[1],14,TEXT,Font.BOLD));bit.add(gap(5));bit.add(label(step[2],11,MUTED));steps.add(bit);
-        }
-        alignLeft(steps);p.add(steps);
+        alignLeft(folderCard);p.add(folderCard);p.add(gap(10));
 
         startButton.addActionListener(e->startSharing());stopButton.addActionListener(e->stopSharing());
         linkCopy.addActionListener(e->{if(server!=null&&server.isRunning())copy(connectionUrl(),"Address copied");});
@@ -278,7 +305,7 @@ public final class DesktopMain {
         return p;
     }
     private static JPanel createSyncScreen() {
-        JPanel p=content("Backup & sync", "Back up folders or safely merge files with another Edo host.");
+        JPanel p=content("Backup & sync", "Transfer or merge folders with another Edo device.");
         JPanel connect=card(new BorderLayout(0,15));
         connect.add(column("Connect to another Edo", "Paste the remote computer or TV address and its pairing PIN."),BorderLayout.NORTH);
         remoteField=input(pref.get("remote","http://192.168.1.10:8765"));pinField=input("");pinField.setColumns(7);pinField.setToolTipText("Remote Edo pairing PIN");
@@ -318,18 +345,22 @@ public final class DesktopMain {
         return p;
     }
     private static JPanel createSettingsScreen() {
-        JPanel p=content("Settings", "Choose how Edo keeps your devices connected and your files protected.");
-        JPanel security=card(new BorderLayout(0,17));security.add(column("Connection security", "These settings are applied when sharing starts."),BorderLayout.NORTH);
-        approval=toggle("Ask me before accepting a new device",pref.getBoolean("approve",true));
-        encrypted=toggle("Use encrypted HTTPS (advanced)",pref.getBoolean("tls",false));
-        JPanel toggles=stack(0);alignLeft(approval);alignLeft(encrypted);toggles.add(approval);toggles.add(gap(13));toggles.add(encrypted);
+        JPanel p=content("Settings", "Pairing, encryption and trusted devices.");
+        JPanel security=card(new BorderLayout(0,12));
+        security.add(column("Connection security", "Applied when sharing starts."),BorderLayout.NORTH);
+        approval=toggle("Approve new devices",pref.getBoolean("approve",true));
+        encrypted=toggle("Encrypted HTTPS",pref.getBoolean("tls",false));
+        JPanel toggles=stack(0);alignLeft(approval);alignLeft(encrypted);toggles.add(approval);toggles.add(gap(9));toggles.add(encrypted);
         security.add(toggles,BorderLayout.CENTER);
-        security.add(label("HTTPS uses a local certificate. Your browser may require you to trust it.",11,MUTED),BorderLayout.SOUTH);
-        alignLeft(security);p.add(security);p.add(gap(20));
-        JPanel trust=card(new BorderLayout(0,13));trust.add(column("Paired devices", "Revoke access for devices that were previously trusted."),BorderLayout.NORTH);
-        JButton revoke=button("Disconnect & forget all devices",false);revoke.addActionListener(e->{if(server==null){message("Start sharing first to manage trusted devices.");return;}
+        security.add(label("HTTPS may require certificate trust.",11,MUTED),BorderLayout.SOUTH);
+        JPanel trust=card(new BorderLayout(0,12));
+        trust.add(column("Trusted devices", "Revoke previously approved access."),BorderLayout.NORTH);
+        JButton revoke=button("Forget devices",false);revoke.addActionListener(e->{if(server==null){message("Start sharing first to manage trusted devices.");return;}
             if(JOptionPane.showConfirmDialog(frame,"Forget all trusted devices? They will need to pair again.","Disconnect devices",JOptionPane.YES_NO_OPTION,JOptionPane.WARNING_MESSAGE)==JOptionPane.YES_OPTION){server.disconnectAll();message("All paired devices were disconnected.");}});
-        trust.add(row(revoke),BorderLayout.CENTER);alignLeft(trust);p.add(trust);p.add(gap(20));
+        trust.add(row(revoke),BorderLayout.CENTER);
+        JPanel twoColumns=new JPanel(new GridLayout(1,2,12,0));
+        twoColumns.setOpaque(false);twoColumns.add(security);twoColumns.add(trust);
+        alignLeft(twoColumns);p.add(twoColumns);p.add(gap(12));
         JPanel about=card(new BorderLayout(0,10));about.add(column("About Edo", "Every Device. One Connection."),BorderLayout.NORTH);
         JPanel text=stack(0);text.add(label("Edo Desktop v" + APP_VERSION + "  ·  Desktop sharing over your local network.",12,MUTED));text.add(gap(5));
         text.add(label("HTTP is not encrypted. Avoid public Wi-Fi and port forwarding.",12,MUTED));
@@ -397,13 +428,15 @@ public final class DesktopMain {
         startButton.setEnabled(!transitioning&&!running);stopButton.setEnabled(!transitioning&&running);
         startButton.setText(transitioning?"Please wait...":running?"●  Sharing is on":"▶  Start sharing");
         if(!running){
+            heroStatus.setText(transitioning?"●  STARTING SERVICE":"●  READY TO CONNECT");
             statusChip.setText(transitioning?"●  WORKING":"●  OFFLINE");statusChip.setForeground(MUTED);
             addressLabel.setText(OFFLINE_URL);addressLabel.setFont(font(12,Font.PLAIN));pinLabel.setText("— — — — — —");
             transfersLabel.setText("Active transfers  0");deviceHint.setText("Waiting for sharing to start");
             linkCopy.setEnabled(false);pinCopy.setEnabled(false);openBrowser.setEnabled(false);
             return;
         }
-        String address=connectionUrl();statusChip.setText("●  SHARING LIVE");statusChip.setForeground(GREEN);
+        String address=connectionUrl();heroStatus.setText("●  SHARING LIVE ON YOUR NETWORK");
+        statusChip.setText("●  SHARING LIVE");statusChip.setForeground(GREEN);
         addressLabel.setText(address);addressLabel.setFont(font(15,Font.BOLD));addressLabel.setToolTipText(address);
         pinLabel.setText(s.pin());transfersLabel.setText("Active transfers  "+s.activeTransfers());
         deviceHint.setText(s.isSecure()?"HTTPS enabled":"Local network connection");
@@ -492,7 +525,11 @@ public final class DesktopMain {
         RoundedPanel(Color color,int round){this.color=color;this.round=round;setOpaque(false);}
         @Override protected void paintComponent(Graphics g){Graphics2D g2=(Graphics2D)g.create();
             g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING,RenderingHints.VALUE_ANTIALIAS_ON);
-            g2.setColor(color);g2.fillRoundRect(0,0,getWidth(),getHeight(),round,round);g2.dispose();super.paintComponent(g);}
+            g2.setPaint(new GradientPaint(0,0,color,0,getHeight(),new Color(
+                Math.max(0,color.getRed()-4),Math.max(0,color.getGreen()-2),Math.max(0,color.getBlue()-4))));
+            g2.fillRoundRect(0,0,getWidth(),getHeight(),round,round);
+            g2.setColor(LINE);g2.drawRoundRect(0,0,getWidth()-1,getHeight()-1,round,round);
+            g2.dispose();super.paintComponent(g);}
     }
     private static class ToggleIcon implements Icon {
         private final boolean checked;ToggleIcon(boolean on){checked=on;}
@@ -515,21 +552,25 @@ public final class DesktopMain {
         @Override protected void paintComponent(Graphics g){Graphics2D g2=(Graphics2D)g.create();
             g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING,RenderingHints.VALUE_ANTIALIAS_ON);
             boolean primary=Boolean.TRUE.equals(getClientProperty("primary"));
-            Color base=primary?GREEN:new Color(48,70,81);
-            if(!isEnabled())base=new Color(53,67,72);
-            else if(getModel().isPressed())base=primary?new Color(142,203,72):new Color(59,78,89);
-            else if(getModel().isRollover())base=primary?new Color(211,255,150):new Color(67,88,100);
-            g2.setColor(base);g2.fillRoundRect(0,0,getWidth(),getHeight(),13,13);g2.dispose();super.paintComponent(g);}
+            Color base=primary?GREEN:PANEL2;
+            if(!isEnabled())base=new Color(48,59,67);
+            else if(getModel().isPressed())base=primary?new Color(120,218,151):new Color(51,72,82);
+            else if(getModel().isRollover())base=primary?new Color(196,255,213):new Color(51,71,83);
+            g2.setColor(base);g2.fillRoundRect(0,0,getWidth(),getHeight(),16,16);
+            g2.setColor(primary?new Color(160,247,186):LINE);
+            g2.drawRoundRect(0,0,getWidth()-1,getHeight()-1,16,16);
+            if(isFocusOwner()){g2.setColor(GREEN);g2.setStroke(new BasicStroke(2f));g2.drawRoundRect(2,2,getWidth()-5,getHeight()-5,12,12);}
+            g2.dispose();super.paintComponent(g);}
     }
     private static class NetworkGraphic extends JPanel {
         @Override protected void paintComponent(Graphics g){super.paintComponent(g);
             Graphics2D q=(Graphics2D)g.create();q.setRenderingHint(RenderingHints.KEY_ANTIALIASING,RenderingHints.VALUE_ANTIALIAS_ON);
             int w=getWidth(),h=getHeight();q.setStroke(new BasicStroke(2f,BasicStroke.CAP_ROUND,BasicStroke.JOIN_ROUND));
-            q.setColor(new Color(70,106,91));q.drawLine(45,h/2,w-39,h/2);q.drawLine(w/2,h/2-28,w/2,h/2+28);
+            q.setColor(new Color(71,139,123));q.drawLine(45,h/2,w-39,h/2);q.drawLine(w/2,h/2-28,w/2,h/2+28);
             q.setColor(GREEN);q.fillOval(w/2-7,h/2-7,14,14);
-            q.setColor(new Color(45,76,65));q.fillRoundRect(5,h/2-36,58,73,13,13);
+            q.setColor(new Color(34,92,76));q.fillRoundRect(5,h/2-36,58,73,13,13);
             q.fillRoundRect(w-62,h/2-27,50,53,11,11);
-            q.setColor(new Color(188,229,199));q.drawRoundRect(12,h/2-28,44,49,5,5);
+            q.setColor(new Color(198,255,223));q.drawRoundRect(12,h/2-28,44,49,5,5);
             q.drawLine(21,h/2+27,49,h/2+27);
             q.drawRoundRect(w-52,h/2-20,30,40,5,5);
             q.setColor(GREEN);q.fillOval(31,h/2-7,6,6);q.fillOval(w-39,h/2-3,6,6);

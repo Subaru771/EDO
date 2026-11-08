@@ -28,17 +28,20 @@ public final class DiagnosticsActivity extends Activity {
         return out.toString();
     }
     @Override protected void onCreate(Bundle state){super.onCreate(state);
-        LinearLayout view=new LinearLayout(this);view.setOrientation(LinearLayout.VERTICAL);view.setPadding(22,22,22,22);
-        view.setBackgroundColor(Color.rgb(13,20,26));
-        TextView title=new TextView(this);title.setText("Edo · Diagnostics");title.setTextColor(Color.WHITE);title.setTextSize(25);view.addView(title);
+        LinearLayout view=new LinearLayout(this);view.setOrientation(LinearLayout.VERTICAL);view.setPadding(24,20,24,22);
+        view.setBackgroundColor(Color.rgb(16,21,26));
+        TextView title=new TextView(this);title.setText("Diagnostics");title.setTextColor(Color.rgb(242,246,247));title.setTextSize(26);view.addView(title);
         TextView contents=new TextView(this);contents.setText(report());contents.setTextIsSelectable(true);
-        contents.setTextColor(Color.rgb(198,230,220));contents.setTextSize(14);contents.setPadding(0,18,0,18);
+        contents.setTextColor(Color.rgb(172,190,199));contents.setTextSize(14);contents.setPadding(0,16,0,16);
         ScrollView scroll=new ScrollView(this);scroll.addView(contents);view.addView(scroll,new LinearLayout.LayoutParams(-1,0,1));
-        Button share=new Button(this);share.setText("Share diagnostic report");share.setOnClickListener(v->{
+        Button share=new Button(this);share.setText("Share report");share.setAllCaps(false);share.setTextSize(15);
+        share.setBackgroundTintList(android.content.res.ColorStateList.valueOf(Color.rgb(163,229,192)));
+        share.setTextColor(Color.rgb(16,21,26));share.setOnClickListener(v->{
             Intent send=new Intent(Intent.ACTION_SEND);send.setType("text/plain");send.putExtra(Intent.EXTRA_TEXT,report());
             startActivity(Intent.createChooser(send,"Share Edo diagnostics"));
         });view.addView(share);
-        Button close=new Button(this);close.setText("Back to Edo");close.setOnClickListener(v->finish());view.addView(close);
+        Button close=new Button(this);close.setText("Back to Edo");close.setAllCaps(false);close.setTextSize(17);
+        close.setTextSize(15);close.setOnClickListener(v->finish());view.addView(close);
         setContentView(view);
     }
 }

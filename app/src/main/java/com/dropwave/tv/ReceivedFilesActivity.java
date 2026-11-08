@@ -33,11 +33,11 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 
-/** Native, D-pad accessible browser for received content under Downloads/DropWave. */
+/** Native, D-pad accessible browser for Edo downloads (and readable legacy files). */
 public final class ReceivedFilesActivity extends Activity {
-    private static final int BG=Color.rgb(7,21,28), PANEL=Color.rgb(17,39,47);
-    private static final int BORDER=Color.rgb(44,70,79), WHITE=Color.rgb(236,249,247);
-    private static final int MUTED=Color.rgb(154,183,190), ACCENT=Color.rgb(181,255,104);
+    private static final int BG=Color.rgb(16,21,26), PANEL=Color.rgb(25,33,39);
+    private static final int BORDER=Color.rgb(52,67,75), WHITE=Color.rgb(242,246,247);
+    private static final int MUTED=Color.rgb(172,190,199), ACCENT=Color.rgb(163,229,192);
     private LinearLayout listContainer;
     private TextView breadcrumb, summary, sortButton;
     private EditText search;
@@ -49,7 +49,7 @@ public final class ReceivedFilesActivity extends Activity {
 
     private int dp(float v){return (int)(v*getResources().getDisplayMetrics().density+0.5f);}
     private GradientDrawable background(int fill,int border){
-        GradientDrawable d=new GradientDrawable();d.setColor(fill);d.setCornerRadius(dp(12));d.setStroke(dp(1),border);return d;
+        GradientDrawable d=new GradientDrawable();d.setColor(fill);d.setCornerRadius(dp(11));d.setStroke(dp(1),border);return d;
     }
     private LinearLayout column(){LinearLayout l=new LinearLayout(this);l.setOrientation(LinearLayout.VERTICAL);return l;}
     private TextView text(String s,int size,int color,boolean bold){
@@ -58,7 +58,7 @@ public final class ReceivedFilesActivity extends Activity {
     }
     private void space(LinearLayout l,int h){View v=new View(this);l.addView(v,new LinearLayout.LayoutParams(1,dp(h)));}
     private TextView button(String s,Runnable action){
-        TextView t=text(s,16,WHITE,true);t.setGravity(Gravity.CENTER);t.setPadding(dp(17),dp(13),dp(17),dp(13));
+        TextView t=text(s,15,WHITE,true);t.setGravity(Gravity.CENTER);t.setPadding(dp(13),dp(11),dp(13),dp(11));
         t.setBackground(background(PANEL,BORDER));t.setFocusable(true);t.setClickable(true);
         t.setOnFocusChangeListener((v,hasFocus)->{
             t.setBackground(background(hasFocus?WHITE:PANEL,hasFocus?WHITE:BORDER));
@@ -79,16 +79,17 @@ public final class ReceivedFilesActivity extends Activity {
     @Override protected void onSaveInstanceState(Bundle out){out.putString("folder",folder);out.putInt("sort",sort);super.onSaveInstanceState(out);}
     private void build(){
         ScrollView sc=new ScrollView(this);sc.setFillViewport(true);sc.setBackgroundColor(BG);
-        LinearLayout root=column();root.setPadding(dp(26),dp(22),dp(26),dp(26));sc.addView(root);
-        TextView back=button("‹  Edo dashboard",this::finish);root.addView(back);
-        space(root,18);root.addView(text("Received files",30,WHITE,true));space(root,5);
-        root.addView(text("Browse what other devices sent to your TV. Files are saved in Downloads / DropWave.",15,MUTED,false));
-        space(root,20);
-        breadcrumb=text("Downloads / DropWave",16,ACCENT,true);root.addView(breadcrumb);space(root,12);
+        LinearLayout root=column();root.setPadding(dp(24),dp(19),dp(24),dp(24));sc.addView(root);
+        TextView back=button("‹   Back to dashboard",this::finish);root.addView(back);
+        space(root,13);root.addView(text("YOUR FILES",12,ACCENT,true));space(root,5);
+        root.addView(text("Received files",26,WHITE,true));space(root,5);
+        root.addView(text("Files sent to this TV.",14,MUTED,false));
+        space(root,14);
+        breadcrumb=text("Downloads / Edo",14,ACCENT,true);root.addView(breadcrumb);space(root,9);
         search=new EditText(this);search.setSingleLine(true);search.setHint("Search received files and folders");
-        search.setTextColor(WHITE);search.setHintTextColor(MUTED);search.setTextSize(17);
+        search.setTextColor(WHITE);search.setHintTextColor(MUTED);search.setTextSize(15);
         search.setPadding(dp(14),dp(9),dp(14),dp(9));search.setBackground(background(PANEL,BORDER));
-        root.addView(search,new LinearLayout.LayoutParams(-1,dp(54)));
+        root.addView(search,new LinearLayout.LayoutParams(-1,dp(45)));
         search.addTextChangedListener(new TextWatcher(){
             public void beforeTextChanged(CharSequence s,int a,int c,int f){}
             public void onTextChanged(CharSequence s,int start,int before,int count){query=s.toString().trim();pageSize=100;render();}
@@ -143,7 +144,7 @@ public final class ReceivedFilesActivity extends Activity {
     }
     private void render(){
         if(listContainer==null)return;
-        breadcrumb.setText("Downloads / DropWave"+(folder.isEmpty()?"":" / "+folder.replace("/"," / ")));
+        breadcrumb.setText("Downloads / Edo"+(folder.isEmpty()?"":" / "+folder.replace("/"," / ")));
         sortButton.setText("Sort: "+new String[]{"Recent","Name","Size","Type"}[sort]);
         listContainer.removeAllViews();
         if(!folder.isEmpty())addRow("↰  Parent folder","Go up one level",()->navigate(parent(folder)),null);
@@ -195,11 +196,11 @@ public final class ReceivedFilesActivity extends Activity {
     }
     private void addRow(String title,String details,Runnable onClick,Runnable more){
         LinearLayout row=new LinearLayout(this);row.setOrientation(LinearLayout.HORIZONTAL);row.setGravity(Gravity.CENTER_VERTICAL);
-        row.setPadding(dp(14),dp(12),dp(12),dp(12));row.setBackground(background(PANEL,BORDER));
-        LinearLayout detailsView=column();TextView name=text(title,17,WHITE,true);name.setMaxLines(2);
-        detailsView.addView(name);space(detailsView,5);detailsView.addView(text(details,13,MUTED,false));
+        row.setPadding(dp(11),dp(8),dp(10),dp(8));row.setBackground(background(PANEL,BORDER));
+        LinearLayout detailsView=column();TextView name=text(title,15,WHITE,true);name.setMaxLines(2);
+        detailsView.addView(name);space(detailsView,3);detailsView.addView(text(details,12,MUTED,false));
         detailsView.setFocusable(true);detailsView.setClickable(true);
-        detailsView.setPadding(dp(4),dp(7),dp(4),dp(7));
+        detailsView.setPadding(dp(3),dp(5),dp(3),dp(5));
         detailsView.setOnFocusChangeListener((v,focused)->{
             name.setTextColor(focused?ACCENT:WHITE);row.setBackground(background(focused?BORDER:PANEL,focused?ACCENT:BORDER));
         });
@@ -207,7 +208,7 @@ public final class ReceivedFilesActivity extends Activity {
         detailsView.setOnLongClickListener(v->{if(more!=null){more.run();return true;}return false;});
         row.addView(detailsView,new LinearLayout.LayoutParams(0,-2,1));
         if(more!=null){TextView menu=button("⋮  Options",more);LinearLayout.LayoutParams p=new LinearLayout.LayoutParams(-2,-2);p.leftMargin=dp(10);row.addView(menu,p);}
-        listContainer.addView(row);space(listContainer,8);
+        listContainer.addView(row);space(listContainer,5);
     }
     private Uri uriFor(LanServer.Entry e){
         // IDs are obtained from AndroidFiles.list(), not arbitrary user input.
@@ -268,19 +269,40 @@ public final class ReceivedFilesActivity extends Activity {
         }catch(Exception ex){toast("Could not open file: "+ex.getMessage());}
     }
     private void options(LanServer.Entry e){
-        String[] menu={category(e).equals("APK")?"Install APK":"Open / Preview", "Send to nearby Edo", "Copy to USB / external", "File details", "Rename", "Move to folder", "Delete"};
-        new AlertDialog.Builder(this).setTitle(e.name).setItems(menu,(d,choice)->{
-            if(choice==0)openFile(e);
-            else if(choice==1){Intent intent=new Intent(this,PeerDiscoveryActivity.class);intent.putExtra("fileId",e.id);startActivity(intent);}
-            else if(choice==2){Intent i=new Intent(this,ExternalStorageActivity.class);i.putExtra("exportId",e.id);startActivity(i);}
-            else if(choice==3)details(e);
-            else if(choice==4)rename(e);
-            else if(choice==5)move(e);
-            else if(choice==6)delete(e);
-        }).setNegativeButton("Cancel",null).show();
+        String[] choices={category(e).equals("APK")?"Install APK":"Open / Preview",
+            "Send to Edo","Copy to USB","Details","Rename","Move","Delete"};
+        LinearLayout grid=column();
+        grid.setPadding(dp(12),dp(8),dp(12),dp(5));
+        AlertDialog dialog=new AlertDialog.Builder(this).setTitle(e.name)
+            .setView(grid).setNegativeButton("Close",null).create();
+        for(int i=0;i<choices.length;i+=2){
+            LinearLayout row=new LinearLayout(this);row.setOrientation(LinearLayout.HORIZONTAL);
+            for(int j=i;j<Math.min(i+2,choices.length);j++){
+                final int choice=j;
+                TextView option=button(choices[j],()->{
+                    dialog.dismiss();
+                    if(choice==0)openFile(e);
+                    else if(choice==1){Intent intent=new Intent(this,PeerDiscoveryActivity.class);intent.putExtra("fileId",e.id);startActivity(intent);}
+                    else if(choice==2){Intent intent=new Intent(this,ExternalStorageActivity.class);intent.putExtra("exportId",e.id);startActivity(intent);}
+                    else if(choice==3)details(e);
+                    else if(choice==4)rename(e);
+                    else if(choice==5)move(e);
+                    else if(choice==6)delete(e);
+                });
+                option.setTextSize(14);option.setMinHeight(dp(48));
+                LinearLayout.LayoutParams p=new LinearLayout.LayoutParams(0,-2,1);
+                p.setMargins(0,0,j==i?dp(7):0,0);
+                row.addView(option,p);
+            }
+            if(i+1>=choices.length)row.addView(new View(this),new LinearLayout.LayoutParams(0,dp(1),1));
+            grid.addView(row,new LinearLayout.LayoutParams(-1,-2));
+            space(grid,7);
+        }
+        dialog.show();
     }
     private void details(LanServer.Entry e){
-        String path="Downloads/DropWave/"+(e.folder.isEmpty()?"":e.folder+"/")+e.name;
+        String base="Legacy TV downloads".equals(e.source)?"Downloads/DropWave/":"Downloads/Edo/";
+        String path=base+(e.folder.isEmpty()?"":e.folder+"/")+e.name;
         new AlertDialog.Builder(this).setTitle("File information")
             .setMessage("Name: "+e.name+"\nType: "+category(e)+"\nSize: "+formatSize(e.size)+"\nMIME: "+e.mime+"\nLocation: "+path)
             .setPositiveButton("Open",(d,w)->openFile(e)).setNegativeButton("Close",null).show();
@@ -295,7 +317,7 @@ public final class ReceivedFilesActivity extends Activity {
     }
     private void move(LanServer.Entry e){
         List<String> folders=new ArrayList<>();folders.add("");folders.addAll(allFolders);
-        String[] labels=new String[folders.size()];for(int i=0;i<folders.size();i++)labels[i]=folders.get(i).isEmpty()?"Downloads / DropWave (root)":folders.get(i);
+        String[] labels=new String[folders.size()];for(int i=0;i<folders.size();i++)labels[i]=folders.get(i).isEmpty()?"Downloads / Edo (root)":folders.get(i);
         new AlertDialog.Builder(this).setTitle("Move to folder").setItems(labels,(d,which)->{
             try{new AndroidFiles(this).move(e.id,folders.get(which));reload();}
             catch(Exception ex){toast("Move failed: "+ex.getMessage());}
