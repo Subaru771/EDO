@@ -35,9 +35,9 @@ import java.util.Set;
 
 /** Native, D-pad accessible browser for received content under Downloads/DropWave. */
 public final class ReceivedFilesActivity extends Activity {
-    private static final int BG=Color.rgb(11,18,27), PANEL=Color.rgb(24,37,49);
-    private static final int BORDER=Color.rgb(61,83,97), WHITE=Color.rgb(246,250,251);
-    private static final int MUTED=Color.rgb(174,194,205), ACCENT=Color.rgb(154,242,184);
+    private static final int BG=Color.rgb(16,21,26), PANEL=Color.rgb(25,33,39);
+    private static final int BORDER=Color.rgb(52,67,75), WHITE=Color.rgb(242,246,247);
+    private static final int MUTED=Color.rgb(172,190,199), ACCENT=Color.rgb(163,229,192);
     private LinearLayout listContainer;
     private TextView breadcrumb, summary, sortButton;
     private EditText search;
@@ -49,7 +49,7 @@ public final class ReceivedFilesActivity extends Activity {
 
     private int dp(float v){return (int)(v*getResources().getDisplayMetrics().density+0.5f);}
     private GradientDrawable background(int fill,int border){
-        GradientDrawable d=new GradientDrawable();d.setColor(fill);d.setCornerRadius(dp(17));d.setStroke(dp(1),border);return d;
+        GradientDrawable d=new GradientDrawable();d.setColor(fill);d.setCornerRadius(dp(11));d.setStroke(dp(1),border);return d;
     }
     private LinearLayout column(){LinearLayout l=new LinearLayout(this);l.setOrientation(LinearLayout.VERTICAL);return l;}
     private TextView text(String s,int size,int color,boolean bold){
@@ -58,7 +58,7 @@ public final class ReceivedFilesActivity extends Activity {
     }
     private void space(LinearLayout l,int h){View v=new View(this);l.addView(v,new LinearLayout.LayoutParams(1,dp(h)));}
     private TextView button(String s,Runnable action){
-        TextView t=text(s,17,WHITE,true);t.setGravity(Gravity.CENTER);t.setPadding(dp(18),dp(15),dp(18),dp(15));
+        TextView t=text(s,15,WHITE,true);t.setGravity(Gravity.CENTER);t.setPadding(dp(13),dp(11),dp(13),dp(11));
         t.setBackground(background(PANEL,BORDER));t.setFocusable(true);t.setClickable(true);
         t.setOnFocusChangeListener((v,hasFocus)->{
             t.setBackground(background(hasFocus?WHITE:PANEL,hasFocus?WHITE:BORDER));
@@ -79,17 +79,17 @@ public final class ReceivedFilesActivity extends Activity {
     @Override protected void onSaveInstanceState(Bundle out){out.putString("folder",folder);out.putInt("sort",sort);super.onSaveInstanceState(out);}
     private void build(){
         ScrollView sc=new ScrollView(this);sc.setFillViewport(true);sc.setBackgroundColor(BG);
-        LinearLayout root=column();root.setPadding(dp(36),dp(31),dp(36),dp(32));sc.addView(root);
+        LinearLayout root=column();root.setPadding(dp(24),dp(19),dp(24),dp(24));sc.addView(root);
         TextView back=button("‹   Back to dashboard",this::finish);root.addView(back);
-        space(root,27);root.addView(text("YOUR TV LIBRARY",13,ACCENT,true));space(root,9);
-        root.addView(text("Received files",34,WHITE,true));space(root,7);
-        root.addView(text("Explore files delivered to this TV from your other devices.",16,MUTED,false));
-        space(root,25);
-        breadcrumb=text("Downloads / Edo",16,ACCENT,true);root.addView(breadcrumb);space(root,14);
+        space(root,13);root.addView(text("YOUR FILES",12,ACCENT,true));space(root,5);
+        root.addView(text("Received files",26,WHITE,true));space(root,5);
+        root.addView(text("Files sent to this TV.",14,MUTED,false));
+        space(root,14);
+        breadcrumb=text("Downloads / Edo",14,ACCENT,true);root.addView(breadcrumb);space(root,9);
         search=new EditText(this);search.setSingleLine(true);search.setHint("Search received files and folders");
-        search.setTextColor(WHITE);search.setHintTextColor(MUTED);search.setTextSize(17);
+        search.setTextColor(WHITE);search.setHintTextColor(MUTED);search.setTextSize(15);
         search.setPadding(dp(14),dp(9),dp(14),dp(9));search.setBackground(background(PANEL,BORDER));
-        root.addView(search,new LinearLayout.LayoutParams(-1,dp(54)));
+        root.addView(search,new LinearLayout.LayoutParams(-1,dp(45)));
         search.addTextChangedListener(new TextWatcher(){
             public void beforeTextChanged(CharSequence s,int a,int c,int f){}
             public void onTextChanged(CharSequence s,int start,int before,int count){query=s.toString().trim();pageSize=100;render();}
@@ -144,7 +144,7 @@ public final class ReceivedFilesActivity extends Activity {
     }
     private void render(){
         if(listContainer==null)return;
-        breadcrumb.setText("Downloads / DropWave"+(folder.isEmpty()?"":" / "+folder.replace("/"," / ")));
+        breadcrumb.setText("Downloads / Edo"+(folder.isEmpty()?"":" / "+folder.replace("/"," / ")));
         sortButton.setText("Sort: "+new String[]{"Recent","Name","Size","Type"}[sort]);
         listContainer.removeAllViews();
         if(!folder.isEmpty())addRow("↰  Parent folder","Go up one level",()->navigate(parent(folder)),null);
@@ -196,11 +196,11 @@ public final class ReceivedFilesActivity extends Activity {
     }
     private void addRow(String title,String details,Runnable onClick,Runnable more){
         LinearLayout row=new LinearLayout(this);row.setOrientation(LinearLayout.HORIZONTAL);row.setGravity(Gravity.CENTER_VERTICAL);
-        row.setPadding(dp(14),dp(12),dp(12),dp(12));row.setBackground(background(PANEL,BORDER));
-        LinearLayout detailsView=column();TextView name=text(title,17,WHITE,true);name.setMaxLines(2);
-        detailsView.addView(name);space(detailsView,5);detailsView.addView(text(details,13,MUTED,false));
+        row.setPadding(dp(11),dp(8),dp(10),dp(8));row.setBackground(background(PANEL,BORDER));
+        LinearLayout detailsView=column();TextView name=text(title,15,WHITE,true);name.setMaxLines(2);
+        detailsView.addView(name);space(detailsView,3);detailsView.addView(text(details,12,MUTED,false));
         detailsView.setFocusable(true);detailsView.setClickable(true);
-        detailsView.setPadding(dp(4),dp(7),dp(4),dp(7));
+        detailsView.setPadding(dp(3),dp(5),dp(3),dp(5));
         detailsView.setOnFocusChangeListener((v,focused)->{
             name.setTextColor(focused?ACCENT:WHITE);row.setBackground(background(focused?BORDER:PANEL,focused?ACCENT:BORDER));
         });
@@ -208,7 +208,7 @@ public final class ReceivedFilesActivity extends Activity {
         detailsView.setOnLongClickListener(v->{if(more!=null){more.run();return true;}return false;});
         row.addView(detailsView,new LinearLayout.LayoutParams(0,-2,1));
         if(more!=null){TextView menu=button("⋮  Options",more);LinearLayout.LayoutParams p=new LinearLayout.LayoutParams(-2,-2);p.leftMargin=dp(10);row.addView(menu,p);}
-        listContainer.addView(row);space(listContainer,8);
+        listContainer.addView(row);space(listContainer,5);
     }
     private Uri uriFor(LanServer.Entry e){
         // IDs are obtained from AndroidFiles.list(), not arbitrary user input.
