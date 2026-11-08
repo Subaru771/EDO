@@ -20,6 +20,7 @@ public final class MainActivity extends Activity {
     private TextView status,url,pin,count,activity,files,transportLabel;
     private ImageView qr;
     private LinearLayout actions, pendingActions;
+    private TextView sharingToggle;
     private TextView approvalStatus;
     private final Handler handler=new Handler(Looper.getMainLooper());
     private String shownLink="", shownPending="";
@@ -45,6 +46,24 @@ public final class MainActivity extends Activity {
         });
         b.setOnClickListener(v->callback.run());return b;
     }
+    /** Two equally sized, D-pad focusable actions per row. */
+    private void actionPair(LinearLayout parent,TextView first,TextView second){
+        LinearLayout row=new LinearLayout(this);
+        row.setOrientation(LinearLayout.HORIZONTAL);
+        row.setGravity(Gravity.TOP);
+        first.setMinHeight(dp(48));first.setMaxLines(2);
+        LinearLayout.LayoutParams firstParams=new LinearLayout.LayoutParams(0,-2,1f);
+        firstParams.setMargins(0,0,second==null?0:dp(6),0);
+        row.addView(first,firstParams);
+        if(second!=null){
+            second.setMinHeight(dp(48));second.setMaxLines(2);
+            row.addView(second,new LinearLayout.LayoutParams(0,-2,1f));
+        }else{
+            row.addView(new View(this),new LinearLayout.LayoutParams(0,dp(1),1f));
+        }
+        parent.addView(row,new LinearLayout.LayoutParams(-1,-2));
+        gap(parent,7);
+    }
     @Override public void onCreate(Bundle b){super.onCreate(b);
         getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN|View.SYSTEM_UI_FLAG_LAYOUT_STABLE);
         getWindow().setStatusBarColor(BG);getWindow().setNavigationBarColor(BG);getWindow().setBackgroundDrawable(new android.graphics.drawable.ColorDrawable(BG));
@@ -52,6 +71,15 @@ public final class MainActivity extends Activity {
         liteMode=getPreferences(0).getBoolean("lite",false);
         build();
         if(getPreferences(0).getBoolean("sharing",true))startSharing();
+        // MediaStore can move files this app owned under its previous DropWave name.
+        // Keep the interface responsive: migrations happen off the UI thread.
+        new Thread(()->{
+            int migrated=new AndroidFiles(getApplicationContext()).migrateLegacyDownloads();
+            if(migrated>0)handler.post(()->{
+                Toast.makeText(this,migrated+" existing downloads moved to Downloads/Edo",Toast.LENGTH_LONG).show();
+                update();
+            });
+        },"edo-download-folder-migration").start();
     }
     private void switchLite(){liteMode=!liteMode;getPreferences(0).edit().putBoolean("lite",liteMode).apply();shownLink="";shownPending="";build();update();}
     private void build(){
@@ -93,21 +121,21 @@ public final class MainActivity extends Activity {
         activity=label("No active transfers",13,MUTED,false);right.addView(activity);gap(right,9);
         files=label("Your latest received files will appear here.",13,MUTED,false);files.setMaxLines(4);right.addView(files);gap(right,13);
         actions=column();right.addView(actions);
-        actions.addView(action("▣  Received files",this::browseReceivedFiles,true));gap(actions,7);
-        actions.addView(action("＋  Send a file",this::chooseFile,false));gap(actions,7);
-        actions.addView(action("▤  USB & storage",
-            ()->startActivity(new Intent(this,ExternalStorageActivity.class)),false));gap(actions,13);
-        LinearLayout moreActions=column();
-        moreActions.setVisibility(View.GONE);actions.addView(moreActions);
-        final TextView moreToggle=action("＋   More file actions",()->{
+        LinearLayout moreActions=column();moreActions.setVisibility(View.GONE);
+        final TextView moreToggle=action("＋  More actions",()->{
             boolean open=moreActions.getVisibility()!=View.VISIBLE;
             moreActions.setVisibility(open?View.VISIBLE:View.GONE);
             if(open)moreActions.requestFocus();
         },false);
-        actions.addView(moreToggle);
-        moreActions.addView(action("↻   Refresh file list",this::update,false));gap(moreActions,10);
-        moreActions.addView(action("⬇   Install a received APK",this::installApk,false));gap(moreActions,10);
-        moreActions.addView(action("■   Start / stop sharing",this::toggleSharing,false));
+        actionPair(actions,action("▣  Received files",this::browseReceivedFiles,true),
+            action("＋  Send a file",this::chooseFile,false));
+        actionPair(actions,action("▤  USB & storage",
+            ()->startActivity(new Intent(this,ExternalStorageActivity.class)),false),moreToggle);
+        actions.addView(moreActions);
+        actionPair(moreActions,action("↻  Refresh files",this::update,false),
+            action("⬇  Install APK",this::installApk,false));
+        sharingToggle=action("■  Stop sharing",this::toggleSharing,false);
+        actionPair(moreActions,sharingToggle,null);
         gap(root,11);
         final TextView securityToggle=action("⚙   Advanced settings & security",()->{},false);
         root.addView(securityToggle);gap(root,13);
@@ -121,14 +149,7 @@ public final class MainActivity extends Activity {
         });
         security.addView(label("SETTINGS & TRUST",13,LIME,true));gap(security,11);
         approvalStatus=label("New-device approvals: off",15,WHITE,true);security.addView(approvalStatus);gap(security,12);
-        security.addView(action("◉  Toggle TV approval for new devices (optional)",this::toggleApproval,false));gap(security,10);
-        security.addView(action("◈  Toggle HTTPS encryption (advanced)",this::toggleTls,false));gap(security,10);
-        security.addView(action("?  How to connect with encryption",this::showEncryptionGuide,false));gap(security,10);
-        security.addView(action("◎  Toggle paired-phone remote control",this::toggleRemote,false));gap(security,10);
-        security.addView(action("×  Disconnect and forget all paired devices",this::clearDevices,false));gap(security,12);
-        security.addView(label("Pairing requests appear next to the QR code above.",13,MUTED,false));
-        gap(root,26);root.addView(label("Local Wi-Fi / Ethernet  •  Files received in Downloads / Edo  •  One TV, many devices",13,MUTED,false));
-        security.addView(action("WebDAV credentials (HTTPS only)",()->{
+        TextView webdavAction=action("WebDAV access",()->{
             LanServer server=TransferService.server;
             if(server==null||!server.isSecure()){
                 new AlertDialog.Builder(this).setTitle("Enable HTTPS first")
@@ -137,11 +158,20 @@ public final class MainActivity extends Activity {
             new AlertDialog.Builder(this).setTitle("Edo WebDAV")
                 .setMessage("URL: "+server.scheme()+"://"+TransferService.localIp()+":"+server.port()+"/dav/\nUsername: edo\nPassword: "+server.webdavPassword()+"\n\nTrust Edo’s certificate on the connecting device. Do not share this secret.")
                 .setPositiveButton("Close",null).show();
-        },false));gap(security,10);
-        security.addView(action("Quick receive (QR-only mode)",this::switchLite,false));gap(security,10);
-        security.addView(action("Check connection / troubleshoot",this::checkConnection,false));gap(security,10);
-        security.addView(action("View / share diagnostics",()->startActivity(new Intent(this,DiagnosticsActivity.class)),false));gap(security,10);
-        security.addView(action("Certificate fingerprint / export",this::showCertificateInfo,false));
+        },false);
+        actionPair(security,action("◉  TV approval",this::toggleApproval,false),
+            action("◈  HTTPS encryption",this::toggleTls,false));
+        actionPair(security,action("?  Encryption guide",this::showEncryptionGuide,false),
+            action("◎  Phone remote",this::toggleRemote,false));
+        actionPair(security,action("×  Forget devices",this::clearDevices,false),webdavAction);
+        actionPair(security,action("▣  Quick receive",this::switchLite,false),
+            action("↻  Check connection",this::checkConnection,false));
+        actionPair(security,action("ⓘ  Diagnostics",()->startActivity(new Intent(this,DiagnosticsActivity.class)),false),
+            action("♧  Certificate info",this::showCertificateInfo,false));
+        gap(security,7);
+        security.addView(label("Pairing requests appear next to the QR code above.",13,MUTED,false));
+        gap(root,16);
+        root.addView(label("Local Wi-Fi / Ethernet  •  Downloads / Edo  •  One TV, many devices",12,MUTED,false));
         setContentView(scroll);
     }
     private void showEncryptionGuide(){
@@ -254,7 +284,7 @@ public final class MainActivity extends Activity {
         root.addView(action("Encrypted connection guide",this::showEncryptionGuide,false));gap(root,10);
         root.addView(action("Diagnostics",()->startActivity(new Intent(this,DiagnosticsActivity.class)),false));
         setContentView(scroll);
-        count=null;activity=null;files=null;actions=null;
+        count=null;activity=null;files=null;actions=null;sharingToggle=null;
         shownLink="";shownPending="";
     }
     private void browseReceivedFiles(){startActivity(new Intent(this,ReceivedFilesActivity.class));}
@@ -353,8 +383,7 @@ public final class MainActivity extends Activity {
                 pendingActions.addView(label("PAIRING REQUEST: "+req[1],15,WHITE,true));gap(pendingActions,7);
                 final String id=req[0];
                 TextView approve=action("✓  Approve "+req[1],()->{srv.decide(id,true);update();},true);
-                pendingActions.addView(approve);gap(pendingActions,6);
-                pendingActions.addView(action("×  Reject",()->{srv.decide(id,false);update();},false));gap(pendingActions,12);
+                actionPair(pendingActions,approve,action("×  Reject",()->{srv.decide(id,false);update();},false));
                 if(requests.indexOf(req)==0){approve.requestFocus();Toast.makeText(this,"New pairing request: approve next to QR",Toast.LENGTH_LONG).show();}
               }
             }
@@ -374,10 +403,7 @@ public final class MainActivity extends Activity {
                 if(files!=null)files.setText(sb.toString().trim());
             }
         }catch(Exception ignored){}
-        if(actions!=null && actions.getChildCount()>0){
-            TextView toggle=(TextView)actions.getChildAt(actions.getChildCount()-1);
-            toggle.setText(online?"■  Stop sharing":"▶  Start sharing");
-        }
+        if(sharingToggle!=null)sharingToggle.setText(online?"■  Stop sharing":"▶  Start sharing");
     }
     private void renderQr(String link) throws WriterException {
         BitMatrix matrix=new com.google.zxing.qrcode.QRCodeWriter().encode(link,BarcodeFormat.QR_CODE,440,440);
