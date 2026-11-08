@@ -12,9 +12,10 @@ import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.util.*;
 
-/** Uses the public Downloads/DropWave folder on Android 10+ without broad storage permissions. */
+/** Saves new files into Downloads/Edo while retaining access to previous DropWave downloads. */
 public final class AndroidFiles implements LanServer.Repository {
-    private static final String FOLDER=Environment.DIRECTORY_DOWNLOADS+"/DropWave/";
+    private static final String FOLDER=Environment.DIRECTORY_DOWNLOADS+"/Edo/";
+    private static final String LEGACY_FOLDER=Environment.DIRECTORY_DOWNLOADS+"/DropWave/";
     private static final String PREF="shared_uris";
     private static final String FOLDERS="folders";
     private final Context ctx;
@@ -80,15 +81,24 @@ public final class AndroidFiles implements LanServer.Repository {
     @Override public synchronized List<LanServer.Entry> list() {
         List<LanServer.Entry> all=new ArrayList<>();
         String[] cols={MediaStore.MediaColumns._ID,MediaStore.MediaColumns.DISPLAY_NAME,MediaStore.MediaColumns.SIZE,MediaStore.MediaColumns.MIME_TYPE,MediaStore.MediaColumns.RELATIVE_PATH};
-        try(Cursor c=resolver.query(MediaStore.Downloads.EXTERNAL_CONTENT_URI,cols,MediaStore.MediaColumns.RELATIVE_PATH+" LIKE ?",new String[]{FOLDER+"%"},MediaStore.MediaColumns.DATE_MODIFIED+" DESC")) {
-            if(c!=null)while(c.moveToNext()){
-                long id=c.getLong(0);String name=c.getString(1);long size=c.isNull(2)?0:c.getLong(2);String mim=c.getString(3);
-                String path=c.getString(4);String sub=path!=null&&path.startsWith(FOLDER)?path.substring(FOLDER.length()):"";
-                if(sub.endsWith("/"))sub=sub.substring(0,sub.length()-1);
-                if(!LanServer.validFolder(sub))continue;
-                all.add(new LanServer.Entry("m"+id,name,size,mime(name,mim),"TV downloads",sub));
-            }
-        }catch(Exception ignored){}
+        // Keep legacy files visible until Android permits migration. MediaStore IDs stay
+        // stable when a file moves, so existing file links and actions continue to work.
+        for(String base:new String[]{FOLDER,LEGACY_FOLDER}){
+            try(Cursor c=resolver.query(MediaStore.Downloads.EXTERNAL_CONTENT_URI,cols,
+                    MediaStore.MediaColumns.RELATIVE_PATH+" LIKE ?",new String[]{base+"%"},
+                    MediaStore.MediaColumns.DATE_MODIFIED+" DESC")) {
+                if(c!=null)while(c.moveToNext()){
+                    long id=c.getLong(0);String name=c.getString(1);long size=c.isNull(2)?0:c.getLong(2);String mim=c.getString(3);
+                    String path=c.getString(4);
+                    if(path==null||!path.startsWith(base))continue;
+                    String sub=path.substring(base.length());
+                    if(sub.endsWith("/"))sub=sub.substring(0,sub.length()-1);
+                    if(!LanServer.validFolder(sub))continue;
+                    all.add(new LanServer.Entry("m"+id,name,size,mime(name,mim),
+                        base.equals(FOLDER)?"TV downloads":"Legacy TV downloads",sub));
+                }
+            }catch(Exception ignored){}
+        }
         for(String raw:shared()) {
             try{
                 Uri uri=Uri.parse(raw);Doc d=metadata(uri);
@@ -97,6 +107,53 @@ public final class AndroidFiles implements LanServer.Repository {
         }
         return all;
     }
+    /**
+     * Best-effort, non-destructive migration of previous Edo/DropWave downloads.
+     * Existing MediaStore rows are moved (not copied or deleted). Android may deny
+     * a move for files that are not owned by this app; list() still displays them.
+     * Conflicting filenames are renamed safely instead of overwriting new files.
+     */
+    public int migrateLegacyDownloads() {
+        int moved=0;
+        String[] columns={MediaStore.MediaColumns._ID,MediaStore.MediaColumns.DISPLAY_NAME,
+            MediaStore.MediaColumns.RELATIVE_PATH};
+        // Track the destination names for each relative folder to prevent collisions.
+        Map<String,Set<String>> existing=new HashMap<>();
+        try(Cursor c=resolver.query(MediaStore.Downloads.EXTERNAL_CONTENT_URI,columns,
+                MediaStore.MediaColumns.RELATIVE_PATH+" LIKE ?",new String[]{FOLDER+"%"},null)){
+            if(c!=null)while(c.moveToNext()){
+                String path=c.getString(2),name=c.getString(1);
+                if(path!=null&&path.startsWith(FOLDER)&&name!=null)
+                    existing.computeIfAbsent(path,k->new HashSet<>()).add(name.toLowerCase(Locale.ROOT));
+            }
+        }catch(Exception ignored){}
+        try(Cursor c=resolver.query(MediaStore.Downloads.EXTERNAL_CONTENT_URI,columns,
+                MediaStore.MediaColumns.RELATIVE_PATH+" LIKE ?",new String[]{LEGACY_FOLDER+"%"},null)){
+            if(c!=null)while(c.moveToNext()){
+                String path=c.getString(2),name=c.getString(1);
+                if(path==null||!path.startsWith(LEGACY_FOLDER)||name==null)continue;
+                String sub=path.substring(LEGACY_FOLDER.length());
+                if(sub.endsWith("/"))sub=sub.substring(0,sub.length()-1);
+                if(!LanServer.validFolder(sub))continue;
+                String destination=FOLDER+(sub.isEmpty()?"":sub+"/");
+                Set<String> names=existing.computeIfAbsent(destination,k->new HashSet<>());
+                String safeName=uniqueName(name,names);
+                ContentValues update=new ContentValues();
+                update.put(MediaStore.MediaColumns.RELATIVE_PATH,destination);
+                if(!safeName.equals(name))update.put(MediaStore.MediaColumns.DISPLAY_NAME,safeName);
+                try{
+                    Uri uri=ContentUris.withAppendedId(MediaStore.Downloads.EXTERNAL_CONTENT_URI,c.getLong(0));
+                    if(resolver.update(uri,update,null,null)>0){
+                        names.add(safeName.toLowerCase(Locale.ROOT));moved++;
+                    }
+                }catch(Exception ignored){
+                    // Leave the original file untouched and discoverable in its old folder.
+                }
+            }
+        }catch(Exception ignored){}
+        return moved;
+    }
+
     private static String uniqueName(String desired,Set<String> existing) {
         String candidate=desired;int dot=desired.lastIndexOf('.');String stem=dot>0?desired.substring(0,dot):desired;
         String extension=dot>0?desired.substring(dot):"";int n=2;
