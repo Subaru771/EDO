@@ -346,17 +346,21 @@ public final class DesktopMain {
     }
     private static JPanel createSettingsScreen() {
         JPanel p=content("Settings", "Pairing, encryption and trusted devices.");
-        JPanel security=card(new BorderLayout(0,17));security.add(column("Connection security", "These settings are applied when sharing starts."),BorderLayout.NORTH);
-        approval=toggle("Ask me before accepting a new device",pref.getBoolean("approve",true));
-        encrypted=toggle("Use encrypted HTTPS (advanced)",pref.getBoolean("tls",false));
-        JPanel toggles=stack(0);alignLeft(approval);alignLeft(encrypted);toggles.add(approval);toggles.add(gap(13));toggles.add(encrypted);
+        JPanel security=card(new BorderLayout(0,12));
+        security.add(column("Connection security", "Applied when sharing starts."),BorderLayout.NORTH);
+        approval=toggle("Approve new devices",pref.getBoolean("approve",true));
+        encrypted=toggle("Encrypted HTTPS",pref.getBoolean("tls",false));
+        JPanel toggles=stack(0);alignLeft(approval);alignLeft(encrypted);toggles.add(approval);toggles.add(gap(9));toggles.add(encrypted);
         security.add(toggles,BorderLayout.CENTER);
-        security.add(label("HTTPS uses a local certificate. Your browser may require you to trust it.",11,MUTED),BorderLayout.SOUTH);
-        alignLeft(security);p.add(security);p.add(gap(20));
-        JPanel trust=card(new BorderLayout(0,13));trust.add(column("Paired devices", "Revoke access for devices that were previously trusted."),BorderLayout.NORTH);
-        JButton revoke=button("Disconnect & forget all devices",false);revoke.addActionListener(e->{if(server==null){message("Start sharing first to manage trusted devices.");return;}
+        security.add(label("HTTPS may require certificate trust.",11,MUTED),BorderLayout.SOUTH);
+        JPanel trust=card(new BorderLayout(0,12));
+        trust.add(column("Trusted devices", "Revoke previously approved access."),BorderLayout.NORTH);
+        JButton revoke=button("Forget devices",false);revoke.addActionListener(e->{if(server==null){message("Start sharing first to manage trusted devices.");return;}
             if(JOptionPane.showConfirmDialog(frame,"Forget all trusted devices? They will need to pair again.","Disconnect devices",JOptionPane.YES_NO_OPTION,JOptionPane.WARNING_MESSAGE)==JOptionPane.YES_OPTION){server.disconnectAll();message("All paired devices were disconnected.");}});
-        trust.add(row(revoke),BorderLayout.CENTER);alignLeft(trust);p.add(trust);p.add(gap(20));
+        trust.add(row(revoke),BorderLayout.CENTER);
+        JPanel twoColumns=new JPanel(new GridLayout(1,2,12,0));
+        twoColumns.setOpaque(false);twoColumns.add(security);twoColumns.add(trust);
+        alignLeft(twoColumns);p.add(twoColumns);p.add(gap(12));
         JPanel about=card(new BorderLayout(0,10));about.add(column("About Edo", "Every Device. One Connection."),BorderLayout.NORTH);
         JPanel text=stack(0);text.add(label("Edo Desktop v" + APP_VERSION + "  ·  Desktop sharing over your local network.",12,MUTED));text.add(gap(5));
         text.add(label("HTTP is not encrypted. Avoid public Wi-Fi and port forwarding.",12,MUTED));
