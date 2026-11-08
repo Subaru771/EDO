@@ -1,8 +1,6 @@
 name: Edo UI overhaul — build previews
 
 on:
-  push:
-    branches: [design/edo-interface-overhaul]
   pull_request:
     branches: [main]
   workflow_dispatch:
@@ -45,11 +43,14 @@ jobs:
           jpackage --type app-image --name Edo --app-version 1.0 --vendor Edo --input desktop/dist --main-jar Edo-Desktop.jar --main-class com.dropwave.desktop.DesktopMain --icon desktop/resources/edo-icon.ico --dest desktop/installers
           if ($LASTEXITCODE -ne 0) { throw 'jpackage failed' }
           Compress-Archive -Path desktop/installers/Edo -DestinationPath Edo-UI-Preview-Windows.zip -CompressionLevel Optimal -Force
+      # Artifact storage quota is independent of compilation results.
+      # Let build validation finish even if GitHub refuses the optional preview ZIP.
       - uses: actions/upload-artifact@v4
+        continue-on-error: true
         with:
           name: Edo-UI-Preview-Windows
           path: Edo-UI-Preview-Windows.zip
-          retention-days: 14
+          retention-days: 3
 
   tv-preview:
     name: Android TV debug preview
@@ -70,8 +71,11 @@ jobs:
           gradle-version: '8.9'
       - name: Compile TV debug APK
         run: gradle :app:assembleDebug --no-daemon
+      # Artifact storage quota is independent of compilation results.
+      # Let build validation finish even if GitHub refuses the optional preview ZIP.
       - uses: actions/upload-artifact@v4
+        continue-on-error: true
         with:
           name: Edo-UI-Preview-Android-TV
           path: app/build/outputs/apk/debug/app-debug.apk
-          retention-days: 14
+          retention-days: 3
