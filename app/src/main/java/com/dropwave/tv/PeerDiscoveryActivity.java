@@ -12,12 +12,12 @@ import java.util.*;
 
 /** Native remote-friendly peer picker; requires the other Edo server to be on the same LAN. */
 public final class PeerDiscoveryActivity extends Activity {
-    private static final int BG=Color.rgb(11,18,27), PANEL=Color.rgb(24,37,49);
-    private static final int BORDER=Color.rgb(61,83,97), WHITE=Color.rgb(246,250,251);
+    private static final int BG=Color.rgb(16,21,26), PANEL=Color.rgb(25,33,39);
+    private static final int BORDER=Color.rgb(52,67,75), WHITE=Color.rgb(242,246,247);
     private int dp(float v){return (int)(v*getResources().getDisplayMetrics().density+0.5f);}
     private android.graphics.drawable.GradientDrawable surface(int fill,int border){
         android.graphics.drawable.GradientDrawable d=new android.graphics.drawable.GradientDrawable();
-        d.setColor(fill);d.setCornerRadius(dp(16));d.setStroke(dp(1),border);return d;
+        d.setColor(fill);d.setCornerRadius(dp(11));d.setStroke(dp(1),border);return d;
     }
     private NsdManager nsd;
     private NsdManager.DiscoveryListener discovery;
@@ -27,16 +27,17 @@ public final class PeerDiscoveryActivity extends Activity {
     private String fileId;
     @Override public void onCreate(Bundle b){super.onCreate(b);fileId=getIntent().getStringExtra("fileId");
         ScrollView scroll=new ScrollView(this);scroll.setBackgroundColor(BG);
-        list=new LinearLayout(this);list.setOrientation(1);list.setPadding(dp(35),dp(32),dp(35),dp(35));scroll.addView(list);
-        title("Nearby Edo devices");title("The receiver must have Edo sharing enabled on the same network.");
+        list=new LinearLayout(this);list.setOrientation(1);list.setPadding(dp(24),dp(19),dp(24),dp(24));scroll.addView(list);
+        title("Nearby devices");subtitle("Send to another Edo host on the same Wi-Fi.");
         button("Enter address manually",()->manual(null));button("Refresh nearby devices",this::restart);
         setContentView(scroll);restart();
     }
-    private void title(String s){TextView t=new TextView(this);t.setText(s);t.setTextColor(WHITE);t.setTextSize(22);t.setPadding(dp(4),dp(12),dp(4),dp(12));list.addView(t);}
+    private void title(String s){TextView t=new TextView(this);t.setText(s);t.setTextColor(WHITE);t.setTextSize(26);t.setPadding(dp(4),dp(8),dp(4),dp(8));list.addView(t);}
+    private void subtitle(String s){TextView t=new TextView(this);t.setText(s);t.setTextColor(Color.rgb(172,190,199));t.setTextSize(14);t.setPadding(dp(4),dp(2),dp(4),dp(13));list.addView(t);}
     private void button(String label,Runnable action){
         Button b=new Button(this);b.setText(label);b.setAllCaps(false);b.setFocusable(true);b.setTextSize(16);b.setTextColor(WHITE);
-        b.setPadding(dp(16),dp(15),dp(16),dp(15));b.setBackground(surface(PANEL,BORDER));
-        LinearLayout.LayoutParams lp=new LinearLayout.LayoutParams(-1,-2);lp.setMargins(0,0,0,dp(10));list.addView(b,lp);
+        b.setPadding(dp(13),dp(11),dp(13),dp(11));b.setBackground(surface(PANEL,BORDER));
+        LinearLayout.LayoutParams lp=new LinearLayout.LayoutParams(-1,-2);lp.setMargins(0,0,0,dp(7));list.addView(b,lp);
         b.setOnFocusChangeListener((v,focus)->{b.setBackground(surface(focus?WHITE:PANEL,focus?WHITE:BORDER));b.setTextColor(focus?BG:WHITE);});
         b.setOnClickListener(v->action.run());
     }
