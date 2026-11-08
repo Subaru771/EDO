@@ -363,6 +363,8 @@ input,select,textarea{min-height:37px;border-radius:9px;padding:8px 10px}
 @media(prefers-reduced-motion:reduce){.btn,.bar>div{transition:none!important}}
 
 
+/* Respect the existing larger-text accessibility preference. */
+[data-size=large]{font-size:18px}
 /* Preserve custom accents after the compact theme's default tokens. */
 [data-accent=blue]{--accent:#8acaff}
 [data-accent=amber]{--accent:#f6c77b}
