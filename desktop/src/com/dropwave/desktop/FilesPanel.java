@@ -22,10 +22,10 @@ import java.util.function.Supplier;
 
 /** In-app file manager for Edo's selected shared directory. Does not expose the computer's other folders. */
 public final class FilesPanel extends JPanel {
-    private static final Color BACK = new Color(11,20,28), PANEL = new Color(21,35,45),
-        PANEL2 = new Color(27,44,55), LINE = new Color(47,68,78),
-        TEXT = new Color(239,247,247), MUTED = new Color(152,171,178),
-        GREEN = new Color(186,250,107), DANGER = new Color(252,141,137);
+    private static final Color BACK = new Color(11,16,23), PANEL = new Color(23,33,44),
+        PANEL2 = new Color(33,46,58), LINE = new Color(55,72,85),
+        TEXT = new Color(246,250,251), MUTED = new Color(158,178,190),
+        GREEN = new Color(160,247,186), DANGER = new Color(255,146,151);
     private final Supplier<Path> sharedFolder;
     private final ExecutorService io = Executors.newSingleThreadExecutor(r -> {
         Thread t = new Thread(r,"edo-file-browser-io");t.setDaemon(true);return t;
@@ -53,7 +53,7 @@ public final class FilesPanel extends JPanel {
     public FilesPanel(Supplier<Path> sharedFolder) {
         super(new BorderLayout(0,19));
         this.sharedFolder = sharedFolder;
-        setBackground(BACK);setBorder(new EmptyBorder(28,32,28,32));
+        setBackground(BACK);setBorder(new EmptyBorder(35,38,35,38));
         add(createHeader(), BorderLayout.NORTH);
         add(createBrowser(), BorderLayout.CENTER);
         add(createBottom(), BorderLayout.SOUTH);
@@ -71,25 +71,27 @@ public final class FilesPanel extends JPanel {
     private static JTextField input(String value,String hint) {
         JTextField f = new JTextField(value);
         f.putClientProperty("JTextField.placeholderText",hint);
-        f.setFont(font(13,Font.PLAIN));f.setBackground(PANEL2);f.setForeground(TEXT);
-        f.setCaretColor(GREEN);f.setSelectionColor(new Color(80,112,74));
-        f.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createLineBorder(LINE,1,true),
-            new EmptyBorder(10,12,10,12)));
+        f.setFont(font(14,Font.PLAIN));f.setBackground(PANEL2);f.setForeground(TEXT);
+        f.setCaretColor(GREEN);f.setSelectionColor(new Color(54,103,88));
+        f.setBorder(BorderFactory.createCompoundBorder(new RoundedBorder(15),
+            new EmptyBorder(12,14,12,14)));
         f.setToolTipText(hint);
         return f;
     }
     private static JButton btn(String title,boolean primary){
         JButton b=new JButton(title);b.setForeground(primary?BACK:TEXT);
-        b.setBackground(primary?GREEN:PANEL2);b.setFont(font(12,Font.BOLD));
-        b.setBorder(new EmptyBorder(11,15,11,15));b.setFocusPainted(false);
+        b.setBackground(primary?GREEN:PANEL2);b.setFont(font(13,Font.BOLD));
+        b.setBorder(BorderFactory.createCompoundBorder(new RoundedBorder(14),
+                new EmptyBorder(11,14,11,14)));
+        b.setFocusPainted(false);
         b.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
         return b;
     }
     private JPanel createHeader(){
-        JPanel p = new JPanel(new BorderLayout(0,13));p.setOpaque(false);
-        JPanel title = new JPanel(new BorderLayout(0,6));title.setOpaque(false);
-        JLabel head=label("Your files",27,TEXT);head.setFont(font(27,Font.BOLD));title.add(head,BorderLayout.NORTH);
-        title.add(label("Browse and manage the folder shared through Edo.",13,MUTED),BorderLayout.SOUTH);
+        JPanel p = new JPanel(new BorderLayout(0,18));p.setOpaque(false);
+        JPanel title = new JPanel(new BorderLayout(0,9));title.setOpaque(false);
+        JLabel head=label("File explorer",33,TEXT);head.setFont(font(33,Font.BOLD));title.add(head,BorderLayout.NORTH);
+        title.add(label("A clean, private workspace for everything you choose to share.",14,MUTED),BorderLayout.SOUTH);
         p.add(title,BorderLayout.NORTH);
         JPanel bar=new JPanel(new BorderLayout(8,0));bar.setOpaque(false);
         JPanel nav = new JPanel(new FlowLayout(FlowLayout.LEFT,8,0));nav.setOpaque(false);
@@ -102,21 +104,21 @@ public final class FilesPanel extends JPanel {
         return p;
     }
     private JPanel createBrowser(){
-        JPanel p=new JPanel(new BorderLayout(0,12));p.setBackground(PANEL);
-        p.setBorder(new EmptyBorder(17,18,17,18));
+        JPanel p=new RoundedPanel(new BorderLayout(0,18));p.setBackground(PANEL);
+        p.setBorder(new EmptyBorder(23,23,23,23));
         JPanel commands=new JPanel(new BorderLayout(10,0));commands.setOpaque(false);
         JPanel left = new JPanel(new FlowLayout(FlowLayout.LEFT,7,0));left.setOpaque(false);
         left.add(add);left.add(folder);left.add(open);left.add(rename);
         commands.add(left,BorderLayout.WEST);
-        search.setPreferredSize(new Dimension(200,40));
+        search.setPreferredSize(new Dimension(190,44));
         JPanel searchBox=new JPanel(new BorderLayout(8,0));searchBox.setOpaque(false);
-        JLabel searchCaption=label("SEARCH",10,MUTED);searchCaption.setFont(font(10,Font.BOLD));
+        JLabel searchCaption=label("FIND",10,GREEN);searchCaption.setFont(font(10,Font.BOLD));
         searchBox.add(searchCaption,BorderLayout.WEST);searchBox.add(search,BorderLayout.CENTER);
         commands.add(searchBox,BorderLayout.CENTER);
         p.add(commands,BorderLayout.NORTH);
         JPanel inner = new JPanel(new BorderLayout());inner.setOpaque(false);
         JScrollPane sc=new JScrollPane(table);
-        sc.setBorder(BorderFactory.createLineBorder(LINE));
+        sc.setBorder(new RoundedBorder(16));
         sc.getViewport().setBackground(PANEL);
         sc.getVerticalScrollBar().setUnitIncrement(20);
         inner.add(sc,BorderLayout.CENTER);
@@ -138,22 +140,44 @@ public final class FilesPanel extends JPanel {
         p.add(hint,BorderLayout.SOUTH);
         return p;
     }
+    /** Soft-surface browser panel with rounded corners and a subtle outline. */
+    private static final class RoundedPanel extends JPanel {
+        RoundedPanel(LayoutManager layout) { super(layout); setOpaque(false); }
+        @Override protected void paintComponent(Graphics g) {
+            Graphics2D g2=(Graphics2D)g.create();
+            g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING,RenderingHints.VALUE_ANTIALIAS_ON);
+            g2.setColor(PANEL);g2.fillRoundRect(0,0,getWidth(),getHeight(),22,22);
+            g2.setColor(LINE);g2.drawRoundRect(0,0,getWidth()-1,getHeight()-1,22,22);
+            g2.dispose();super.paintComponent(g);
+        }
+    }
+    private static final class RoundedBorder extends javax.swing.border.AbstractBorder {
+        private final int radius;
+        RoundedBorder(int radius) { this.radius=radius; }
+        @Override public void paintBorder(Component c,Graphics g,int x,int y,int w,int h) {
+            Graphics2D g2=(Graphics2D)g.create();
+            g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING,RenderingHints.VALUE_ANTIALIAS_ON);
+            g2.setColor(LINE);g2.drawRoundRect(x,y,w-1,h-1,radius,radius);g2.dispose();
+        }
+    }
+
     private void configureTable(){
-        table.setFont(font(13,Font.PLAIN));table.setForeground(TEXT);table.setBackground(PANEL);
-        table.setRowHeight(42);table.setShowGrid(false);
-        table.setSelectionBackground(new Color(48,77,66));table.setSelectionForeground(TEXT);
+        table.setFont(font(14,Font.PLAIN));table.setForeground(TEXT);table.setBackground(PANEL);
+        table.setRowHeight(49);table.setShowGrid(false);
+        table.setIntercellSpacing(new Dimension(0,1));
+        table.setSelectionBackground(new Color(45,92,77));table.setSelectionForeground(TEXT);
         table.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
         table.setFillsViewportHeight(true);table.setAutoCreateColumnsFromModel(true);
         table.setRowSorter(sorter);
         JTableHeader h=table.getTableHeader();h.setBackground(PANEL2);h.setForeground(MUTED);
-        h.setFont(font(11,Font.BOLD));h.setPreferredSize(new Dimension(0,37));
+        h.setFont(font(12,Font.BOLD));h.setPreferredSize(new Dimension(0,43));
         DefaultTableCellRenderer render=new DefaultTableCellRenderer(){
             @Override public Component getTableCellRendererComponent(JTable t,Object value,boolean selected,boolean focus,int row,int col){
                 super.getTableCellRendererComponent(t,value,selected,focus,row,col);
                 setBorder(new EmptyBorder(0,12,0,12));
                 setForeground(selected?TEXT:(col==0?TEXT:MUTED));
-                setBackground(selected?new Color(48,77,66):(row%2==0?PANEL:new Color(24,39,49)));
-                if(col==0) setFont(font(13,Font.BOLD));else setFont(font(12,Font.PLAIN));
+                setBackground(selected?new Color(45,92,77):(row%2==0?PANEL:new Color(27,39,50)));
+                if(col==0) setFont(font(14,Font.BOLD));else setFont(font(13,Font.PLAIN));
                 return this;
             }
         };
