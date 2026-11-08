@@ -155,7 +155,14 @@ public final class DesktopMain {
             if (stream != null) frame.setIconImage(ImageIO.read(stream));
         } catch (Exception ignored) {}
         frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
-        frame.setSize(1230, 835);frame.setMinimumSize(new Dimension(920, 660));frame.setLocationRelativeTo(null);
+        // Fit inside the usable desktop area (excluding the taskbar) on smaller screens.
+        Rectangle workArea = GraphicsEnvironment.getLocalGraphicsEnvironment().getMaximumWindowBounds();
+        int initialWidth = Math.min(1230, workArea.width);
+        int initialHeight = Math.min(835, workArea.height);
+        frame.setMinimumSize(new Dimension(Math.min(920, workArea.width), Math.min(660, workArea.height)));
+        frame.setSize(initialWidth, initialHeight);
+        frame.setLocation(workArea.x + (workArea.width - initialWidth) / 2,
+                          workArea.y + (workArea.height - initialHeight) / 2);
         JPanel shell = new JPanel(new BorderLayout());shell.setBackground(BACK);
         JPanel navigation = createSidebar();
         screenCards = new CardLayout();screenHolder = new JPanel(screenCards);screenHolder.setBackground(BACK);
@@ -168,12 +175,7 @@ public final class DesktopMain {
         workspace.setBorder(null);workspace.setContinuousLayout(true);
         workspace.setDividerSize(5);workspace.setBackground(BACK);
         workspace.setResizeWeight(0.0);
-        int savedWidth = Math.max(210, Math.min(310, pref.getInt("navWidth", 248)));
-        workspace.setDividerLocation(savedWidth);
-        workspace.addPropertyChangeListener(JSplitPane.DIVIDER_LOCATION_PROPERTY, e -> {
-            int width = workspace.getDividerLocation();
-            if (width >= 190 && width <= 340) pref.putInt("navWidth", width);
-        });
+        int savedWidth = Math.max(196, Math.min(420, pref.getInt("navWidth", 248)));
         shell.add(workspace, BorderLayout.CENTER);
         frame.setContentPane(shell);
         navigate("share");
@@ -181,6 +183,13 @@ public final class DesktopMain {
         poller.scheduleAtFixedRate(() -> SwingUtilities.invokeLater(DesktopMain::updateStatus), 2, 2, TimeUnit.SECONDS);
         poller.scheduleAtFixedRate(() -> SwingUtilities.invokeLater(DesktopMain::automaticSync), 10, 10, TimeUnit.MINUTES);
         frame.setVisible(true);
+        // Restore only after Swing has laid out the split pane; do not overwrite the
+        // saved preference with the temporary divider position from initial layout.
+        workspace.setDividerLocation(savedWidth);
+        workspace.addPropertyChangeListener(JSplitPane.DIVIDER_LOCATION_PROPERTY, e -> {
+            int width = workspace.getDividerLocation();
+            if (width >= 196 && width <= 420) pref.putInt("navWidth", width);
+        });
     }
     private static JScrollPane scroll(JPanel p) {
         JScrollPane s = new JScrollPane(p);s.setBorder(null);s.setOpaque(false);s.getViewport().setBackground(BACK);
