@@ -170,6 +170,14 @@ public final class AndroidFiles implements LanServer.Repository {
         Uri uri=mediaUri(id);ContentValues values=new ContentValues();values.put(MediaStore.MediaColumns.RELATIVE_PATH,FOLDER+(folder.isEmpty()?"":folder+"/"));
         if(resolver.update(uri,values,null,null)!=1)throw new IOException("Move failed");
     }
+    @Override public synchronized void moveTo(String id,String folder,String name)throws Exception {
+        if(!LanServer.validFolder(folder)||!name.equals(LanServer.cleanName(name)))throw new IllegalArgumentException("Invalid destination");
+        for(LanServer.Entry e:list())if(e.folder.equals(folder)&&e.name.equalsIgnoreCase(name))throw new java.nio.file.FileAlreadyExistsException(name);
+        Uri uri=mediaUri(id);ContentValues values=new ContentValues();
+        values.put(MediaStore.MediaColumns.DISPLAY_NAME,name);
+        values.put(MediaStore.MediaColumns.RELATIVE_PATH,FOLDER+(folder.isEmpty()?"":folder+"/"));
+        if(resolver.update(uri,values,null,null)!=1)throw new IOException("Move failed");
+    }
     @Override public synchronized LanServer.Entry copy(String id,String folder)throws Exception {
         if(!LanServer.validFolder(folder))throw new IllegalArgumentException("Invalid folder");
         try(LanServer.Opened original=open(id)) {return uploadTo(original.name,folder,original.stream,original.length);}

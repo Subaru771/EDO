@@ -49,9 +49,22 @@ public final class SecureDavTest{
                 String move=request(client,port,"MOVE","/dav/Movies/clip.txt",secret,null,"Destination: https://127.0.0.1:"+port+"/dav/Movies/renamed.txt\r\n");
                 ok(move.startsWith("HTTP/1.1 201"),"DAV rename");
                 ok(Files.readString(root.resolve("Movies/renamed.txt")).equals("File from DAV"),"DAV moved data");
-                String deleted=request(client,port,"DELETE","/dav/Movies/renamed.txt",secret,null,null);
+                Files.createDirectories(root.resolve("Other"));
+                Files.writeString(root.resolve("Other/renamed.txt"),"Keep existing destination file");
+                String crossFolder=request(client,port,"MOVE","/dav/Movies/renamed.txt",secret,null,
+                    "Destination: https://127.0.0.1:"+port+"/dav/Other/final.txt\r\n");
+                ok(crossFolder.startsWith("HTTP/1.1 201"),"Move and rename ignores unrelated old-name collision");
+                ok(Files.readString(root.resolve("Other/final.txt")).equals("File from DAV"),"Final destination has source bytes");
+                ok(Files.readString(root.resolve("Other/renamed.txt")).equals("Keep existing destination file"),"Old-name collision remains unchanged");
+                ok(!Files.exists(root.resolve("Movies/renamed.txt")),"Source removed after move");
+                Files.writeString(root.resolve("Movies/source.txt"),"Preserve source on conflict");
+                String conflict=request(client,port,"MOVE","/dav/Movies/source.txt",secret,null,
+                    "Destination: /dav/Other/final.txt\r\n");
+                ok(conflict.startsWith("HTTP/1.1 409"),"Move cannot overwrite final destination");
+                ok(Files.readString(root.resolve("Movies/source.txt")).equals("Preserve source on conflict"),"Rejected move preserves source");
+                String deleted=request(client,port,"DELETE","/dav/Other/final.txt",secret,null,null);
                 ok(deleted.startsWith("HTTP/1.1 204"),"DAV delete");
-                ok(!Files.exists(root.resolve("Movies/renamed.txt")),"DAV removed file");
+                ok(!Files.exists(root.resolve("Other/final.txt")),"DAV removed file");
                 System.out.println("PASS: Real TLS handshake with trusted cert + authenticated WebDAV PROPFIND/MKCOL/PUT/GET/MOVE/DELETE, rejection of overwrite");
             }
         }finally{

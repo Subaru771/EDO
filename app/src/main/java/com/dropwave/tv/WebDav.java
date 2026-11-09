@@ -149,12 +149,7 @@ final class WebDav {
                 LanServer.Entry copy=repo.copy(entry.id,parent(dest));
                 if(!copy.name.equals(leaf(dest)))repo.rename(copy.id,leaf(dest));
             }else{
-                if(!entry.folder.equals(parent(dest)))repo.move(entry.id,parent(dest));
-                if(!entry.name.equals(leaf(dest))){
-                    LanServer.Entry moved=file(repo,(parent(dest).isEmpty()?"":parent(dest)+"/")+entry.name);
-                    if(moved==null)throw new FileNotFoundException("Moved file no longer accessible");
-                    repo.rename(moved.id,leaf(dest));
-                }
+                repo.moveTo(entry.id,parent(dest),leaf(dest));
             }
             simple(output,201,"Created","");return;
         }
