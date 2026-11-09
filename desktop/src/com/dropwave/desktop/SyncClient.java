@@ -71,7 +71,7 @@ final class SyncClient {
         connect();log.write("Backup starting: "+source.getName()+" → "+destination);
         int pushed=0,skipped=0;Path root=source.toPath();
         try(java.util.stream.Stream<Path> paths=Files.walk(root,12)){
-            for(Path p:(Iterable<Path>)paths.filter(q->Files.isRegularFile(q,LinkOption.NOFOLLOW_LINKS)).limit(2000)::iterator){
+            for(Path p:(Iterable<Path>)paths.filter(q->Files.isRegularFile(q,LinkOption.NOFOLLOW_LINKS))::iterator){
                 String rel=root.relativize(p).toString().replace(File.separatorChar,'/');
                 if(rel.startsWith(".")||rel.contains("/."))continue;
                 String stamp=Files.size(p)+":"+Files.getLastModifiedTime(p).toMillis();

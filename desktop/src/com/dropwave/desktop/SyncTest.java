@@ -18,6 +18,16 @@ public final class SyncTest {
                 Thread.sleep(15);Files.writeString(src.resolve("Photos/hello.txt"),"Updated copy!");
                 check(client.run(false)==1,"Changed file backed up");
                 check(Files.exists(root.resolve("DesktopBackup/Photos/hello (2).txt")),"Changed file creates a safe duplicate");
+                // Larger folders must not silently stop at the former 2,000-file cap.
+                Files.createDirectories(src.resolve("Many"));
+                for(int i=0;i<2001;i++)Files.writeString(src.resolve("Many/file-"+i+".txt"),"");
+                check(client.run(false)==2001,"All 2,001 new files are backed up");
+                try(var files=Files.list(root.resolve("DesktopBackup/Many"))){
+                    check(files.count()==2001,"Destination contains every file");
+                }
+                check(client.run(false)==0,"Large backup skips unchanged files");
+                Files.writeString(src.resolve("Many/file-2000.txt"),"changed");
+                check(client.run(false)==1,"Large backup detects a changed file");
                 System.out.println("PASS: One-way desktop backup, nested folders, unchanged-file skip, changed-file versioning");
             }
         }finally{

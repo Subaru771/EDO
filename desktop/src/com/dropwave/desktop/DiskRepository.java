@@ -58,5 +58,11 @@ public final class DiskRepository implements LanServer.Repository {
     @Override public synchronized void removeFolder(String folder)throws Exception{if(folder.isEmpty())throw new IOException("Cannot remove root");Files.delete(folder(folder));}
     @Override public synchronized void rename(String id,String name)throws Exception{if(!name.equals(LanServer.cleanName(name)))throw new IOException("Invalid name");Path p=path(id);Files.move(p,p.getParent().resolve(name));}
     @Override public synchronized void move(String id,String folder)throws Exception{Path p=path(id),dest=folder(folder);Files.createDirectories(dest);if(!dest.toRealPath().startsWith(root))throw new IOException("Invalid folder");Files.move(p,dest.resolve(p.getFileName()));}
+    @Override public synchronized void moveTo(String id,String folder,String name)throws Exception{
+        if(!name.equals(LanServer.cleanName(name)))throw new IOException("Invalid name");
+        Path p=path(id),dest=folder(folder);Files.createDirectories(dest);
+        if(!dest.toRealPath().startsWith(root))throw new IOException("Invalid folder");
+        Files.move(p,dest.resolve(name));
+    }
     @Override public synchronized LanServer.Entry copy(String id,String folder)throws Exception{try(LanServer.Opened o=open(id)){return uploadTo(o.name,folder,o.stream,o.length);}}
 }

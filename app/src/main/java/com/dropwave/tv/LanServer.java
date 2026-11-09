@@ -26,6 +26,15 @@ public final class LanServer implements AutoCloseable {
         default void mkdir(String folder) throws Exception {throw new UnsupportedOperationException("Folders unsupported");}
         default void rename(String id,String name) throws Exception {throw new UnsupportedOperationException("Rename unsupported");}
         default void move(String id,String folder) throws Exception {throw new UnsupportedOperationException("Move unsupported");}
+        /** Move a file to its final name without occupying an intermediate destination. */
+        default void moveTo(String id,String folder,String name) throws Exception {
+            for(Entry e:list())if(e.id.equals(id)){
+                if(e.name.equals(name)){move(id,folder);return;}
+                if(e.folder.equals(folder)){rename(id,name);return;}
+                throw new UnsupportedOperationException("Moving and renaming together is unsupported on this device");
+            }
+            throw new FileNotFoundException("File not found");
+        }
         default Entry copy(String id,String folder) throws Exception {throw new UnsupportedOperationException("Copy unsupported");}
         default void removeFolder(String folder) throws Exception {throw new UnsupportedOperationException("Delete folder unsupported");}
         default List<String> folders() throws Exception {return Collections.emptyList();}
