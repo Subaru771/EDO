@@ -1,0 +1,162 @@
+name: Edo • v1.0.1 download builds
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - .github/workflows/edo-update-downloads.yml
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  verify:
+    name: Desktop regression tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+      - name: Compile desktop
+        run: bash desktop/build.sh
+      - name: Test backup, WebDAV and transfers
+        run: bash scripts/test-all.sh
+
+  android:
+    name: Build signed Android TV update
+    needs: verify
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Require signing credentials
+        env:
+          KEY_B64: ${{ secrets.EDO_KEY_BASE64 }}
+          STORE_PASS: ${{ secrets.EDO_STORE_PASS }}
+          KEY_ALIAS: ${{ secrets.EDO_KEY_ALIAS }}
+          KEY_PASS: ${{ secrets.EDO_KEY_PASS }}
+        run: |
+          for value in "$KEY_B64" "$STORE_PASS" "$KEY_ALIAS" "$KEY_PASS"; do
+            if [ -z "$value" ]; then
+              echo "::error::Signed update requires all four EDO signing secrets."
+              exit 1
+            fi
+          done
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: android-actions/setup-android@v4
+        with:
+          packages: 'platform-tools'
+      - name: Install Android SDK 35
+        run: sdkmanager --install "platforms;android-35" "build-tools;35.0.0"
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.9'
+      - name: Restore signing key
+        env:
+          KEY_B64: ${{ secrets.EDO_KEY_BASE64 }}
+        run: printf '%s' "$KEY_B64" | base64 --decode > "$RUNNER_TEMP/edo-upload-key.jks"
+      - name: Build signed update
+        env:
+          EDO_SIGNING_STORE_FILE: ${{ runner.temp }}/edo-upload-key.jks
+          EDO_SIGNING_STORE_PASSWORD: ${{ secrets.EDO_STORE_PASS }}
+          EDO_SIGNING_KEY_ALIAS: ${{ secrets.EDO_KEY_ALIAS }}
+          EDO_SIGNING_KEY_PASSWORD: ${{ secrets.EDO_KEY_PASS }}
+        run: gradle :app:assembleRelease --no-daemon
+      - name: Verify version and matching v1.0 signature
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          APK=app/build/outputs/apk/release/app-release.apk
+          SIGNER="$ANDROID_HOME/build-tools/35.0.0/apksigner"
+          AAPT="$ANDROID_HOME/build-tools/35.0.0/aapt"
+          "$SIGNER" verify --verbose "$APK"
+          "$AAPT" dump badging "$APK" | grep -q "versionName='1.0.1'"
+          "$AAPT" dump badging "$APK" | grep -q "versionCode='58'"
+          mkdir -p old-release
+          gh release download v1.0 --repo "$GITHUB_REPOSITORY" --pattern 'Edo-v1.0-Android-TV.apk' --dir old-release
+          old=$("$SIGNER" verify --print-certs old-release/Edo-v1.0-Android-TV.apk | sed -n 's/^Signer #1 certificate SHA-256 digest: //p')
+          fresh=$("$SIGNER" verify --print-certs "$APK" | sed -n 's/^Signer #1 certificate SHA-256 digest: //p')
+          if [ -z "$old" ] || [ "$old" != "$fresh" ]; then
+            echo "::error::Update signing certificate does not match the released v1.0 APK. Refusing to publish."
+            exit 1
+          fi
+          mkdir -p downloads
+          cp "$APK" downloads/Edo-v1.0.1-Android-TV.apk
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Edo-v1.0.1-SIGNED-Android-TV
+          path: downloads/Edo-v1.0.1-Android-TV.apk
+          retention-days: 3
+          if-no-files-found: error
+
+  windows:
+    name: Build Windows portable EXE
+    needs: verify
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+      - name: Compile desktop
+        shell: bash
+        run: bash desktop/build.sh
+      - name: Bundle Java runtime and executable
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Path desktop/installers -Force | Out-Null
+          jpackage --type app-image --name Edo --app-version 1.0.1 --vendor Edo --description 'Edo local file transfer' --input desktop/dist --main-jar Edo-Desktop.jar --main-class com.dropwave.desktop.DesktopMain --icon desktop/resources/edo-icon.ico --dest desktop/installers
+          if ($LASTEXITCODE -ne 0) { throw 'jpackage failed' }
+          if (-not (Test-Path desktop/installers/Edo/Edo.exe)) { throw 'Edo.exe is missing' }
+          Compress-Archive -Path desktop/installers/Edo -DestinationPath Edo-v1.0.1-Windows-Portable.zip -CompressionLevel Optimal -Force
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Edo-v1.0.1-Windows-Portable
+          path: Edo-v1.0.1-Windows-Portable.zip
+          retention-days: 3
+          if-no-files-found: error
+
+  publish:
+    name: Publish clearly labeled preview downloads
+    needs: [android, windows]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: Edo-v1.0.1-SIGNED-Android-TV
+          path: downloads
+      - uses: actions/download-artifact@v4
+        with:
+          name: Edo-v1.0.1-Windows-Portable
+          path: downloads
+      - name: Verify files and publish preview release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          test -s downloads/Edo-v1.0.1-Android-TV.apk
+          test -s downloads/Edo-v1.0.1-Windows-Portable.zip
+          (cd downloads && sha256sum Edo-v1.0.1-Android-TV.apk Edo-v1.0.1-Windows-Portable.zip > SHA256SUMS.txt)
+          cat > /tmp/edo-notes.md <<'NOTES'
+          Edo v1.0.1 preview incorporates the merged backup and WebDAV fixes.
+
+          - Backups no longer silently stop after the first 2,000 files.
+          - WebDAV cross-folder moves target the final requested filename.
+          - Regression tests and Android compilation run in GitHub Actions.
+          - The Android APK is signed with the same certificate as v1.0 and uses versionCode 58 for in-place upgrades.
+          - Windows portable ZIP bundles Java; extract and run Edo/Edo.exe.
+
+          Preview release: automated builds and tests passed, but physical TV installation and end-to-end hardware QA are still required. Windows EXE is unsigned.
+          NOTES
+          if gh release view v1.0.1 --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            echo "::error::Release v1.0.1 already exists. Refusing to replace existing downloads."
+            exit 1
+          fi
+          gh release create v1.0.1 downloads/Edo-v1.0.1-Android-TV.apk downloads/Edo-v1.0.1-Windows-Portable.zip downloads/SHA256SUMS.txt --target "$GITHUB_SHA" --title 'Edo v1.0.1 — Download preview' --notes-file /tmp/edo-notes.md --prerelease --repo "$GITHUB_REPOSITORY"
