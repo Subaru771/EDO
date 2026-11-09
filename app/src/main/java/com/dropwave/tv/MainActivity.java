@@ -127,15 +127,15 @@ public final class MainActivity extends Activity {
             moreActions.setVisibility(open?View.VISIBLE:View.GONE);
             if(open)moreActions.requestFocus();
         },false);
-        actionPair(actions,action("▣  Received files",this::browseReceivedFiles,true),
-            action("＋  Send a file",this::chooseFile,false));
-        actionPair(actions,action("▤  USB & storage",
-            ()->startActivity(new Intent(this,ExternalStorageActivity.class)),false),moreToggle);
-        actions.addView(moreActions);
-        actionPair(moreActions,action("↻  Refresh files",this::update,false),
+        // Primary TV tasks are immediately accessible: browse first, install APK second.
+        actionPair(actions,action("▣  Browse files",this::browseReceivedFiles,true),
             action("⬇  Install APK",this::installApk,false));
+        actionPair(actions,action("＋  Send a file",this::chooseFile,false),
+            action("▤  USB & storage",()->startActivity(new Intent(this,ExternalStorageActivity.class)),false));
+        actionPair(actions,moreToggle,null);
+        actions.addView(moreActions);
         sharingToggle=action("■  Stop sharing",this::toggleSharing,false);
-        actionPair(moreActions,sharingToggle,null);
+        actionPair(moreActions,action("↻  Refresh files",this::update,false),sharingToggle);
         gap(root,11);
         final TextView securityToggle=action("⚙   Advanced settings & security",()->{},false);
         root.addView(securityToggle);gap(root,13);

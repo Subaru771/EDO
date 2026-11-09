@@ -39,10 +39,15 @@ public final class ReceivedFilesActivity extends Activity {
     private static final int BORDER=Color.rgb(52,67,75), WHITE=Color.rgb(242,246,247);
     private static final int MUTED=Color.rgb(172,190,199), ACCENT=Color.rgb(163,229,192);
     private LinearLayout listContainer;
-    private TextView breadcrumb, summary, sortButton;
+    private TextView breadcrumb, summary;
+    private ScrollView browserScroll;
+    private boolean focusFilesOnLoad=true;
+    private View initialFileFocus, initialFolderFocus, lastRowFocus;
     private EditText search;
     private String folder="", query="";
     private int sort=0, pageSize=100;
+    private static final String[] SORTS={"Recent","Name","Size","Type"};
+    private static final String[] FILTERS={"All","Video","Image","Audio","APK","PDF","Archive","File"};
     private String categoryFilter="All";
     private List<LanServer.Entry> allFiles=Collections.emptyList();
     private List<String> allFolders=Collections.emptyList();
@@ -78,40 +83,74 @@ public final class ReceivedFilesActivity extends Activity {
     @Override protected void onPause(){RemoteControlBridge.deactivate(this);super.onPause();}
     @Override protected void onSaveInstanceState(Bundle out){out.putString("folder",folder);out.putInt("sort",sort);super.onSaveInstanceState(out);}
     private void build(){
-        ScrollView sc=new ScrollView(this);sc.setFillViewport(true);sc.setBackgroundColor(BG);
-        LinearLayout root=column();root.setPadding(dp(24),dp(19),dp(24),dp(24));sc.addView(root);
-        TextView back=button("‹   Back to dashboard",this::finish);root.addView(back);
-        space(root,13);root.addView(text("YOUR FILES",12,ACCENT,true));space(root,5);
-        root.addView(text("Received files",26,WHITE,true));space(root,5);
-        root.addView(text("Files sent to this TV.",14,MUTED,false));
-        space(root,14);
-        breadcrumb=text("Downloads / Edo",14,ACCENT,true);root.addView(breadcrumb);space(root,9);
-        search=new EditText(this);search.setSingleLine(true);search.setHint("Search received files and folders");
-        search.setTextColor(WHITE);search.setHintTextColor(MUTED);search.setTextSize(15);
-        search.setPadding(dp(14),dp(9),dp(14),dp(9));search.setBackground(background(PANEL,BORDER));
-        root.addView(search,new LinearLayout.LayoutParams(-1,dp(45)));
-        search.addTextChangedListener(new TextWatcher(){
-            public void beforeTextChanged(CharSequence s,int a,int c,int f){}
-            public void onTextChanged(CharSequence s,int start,int before,int count){query=s.toString().trim();pageSize=100;render();}
-            public void afterTextChanged(Editable e){}
+        browserScroll=new ScrollView(this);
+        browserScroll.setFillViewport(true);browserScroll.setBackgroundColor(BG);
+        LinearLayout root=column();root.setPadding(dp(20),dp(14),dp(20),dp(20));
+        browserScroll.addView(root);
+
+        // Single small toolbar: the file list, not configuration, is the main screen.
+        LinearLayout top=new LinearLayout(this);top.setGravity(Gravity.CENTER_VERTICAL);
+        root.addView(top);
+        TextView back=button("‹",this::finish);back.setTextSize(25);back.setContentDescription("Back to Edo");
+        top.addView(back,new LinearLayout.LayoutParams(dp(48),dp(46)));
+        LinearLayout heading=column();heading.setPadding(dp(13),0,0,0);
+        top.addView(heading,new LinearLayout.LayoutParams(0,-2,1));
+        heading.addView(text("Received files",23,WHITE,true));
+        summary=text("Loading files…",12,MUTED,false);heading.addView(summary);
+        TextView searchToggle=button("⌕",()->{
+            boolean open=search.getVisibility()!=View.VISIBLE;
+            search.setVisibility(open?View.VISIBLE:View.GONE);
+            if(open){search.requestFocus();browserScroll.smoothScrollTo(0,0);}
+            else{search.setText("");hideKeyboard();}
         });
-        space(root,12);
-        LinearLayout toolbar=new LinearLayout(this);toolbar.setOrientation(LinearLayout.HORIZONTAL);root.addView(toolbar);
-        sortButton=button("Sort: Recent",()->{sort=(sort+1)%4;render();});
-        toolbar.addView(sortButton,new LinearLayout.LayoutParams(0,-2,1));
-        TextView refresh=button("↻  Refresh",this::reload);LinearLayout.LayoutParams rp=new LinearLayout.LayoutParams(0,-2,1);
-        rp.leftMargin=dp(10);toolbar.addView(refresh,rp);
-        space(root,12);
-        LinearLayout filters=new LinearLayout(this);filters.setOrientation(LinearLayout.HORIZONTAL);root.addView(filters);
-        for(String filter:new String[]{"All","Video","Image","Audio","APK"}){
-            TextView option=button(filter,()->{categoryFilter=filter;render();});
-            LinearLayout.LayoutParams lp=new LinearLayout.LayoutParams(0,-2,1);
-            lp.setMargins(0,0,dp(5),0);filters.addView(option,lp);
-        }
-        space(root,15);
-        summary=text("Loading…",14,MUTED,false);root.addView(summary);space(root,12);
+        searchToggle.setTextSize(23);searchToggle.setContentDescription("Search files");
+        LinearLayout.LayoutParams sp=new LinearLayout.LayoutParams(dp(48),dp(46));
+        sp.leftMargin=dp(7);top.addView(searchToggle,sp);
+        TextView more=button("⋯",this::showBrowserMenu);more.setTextSize(23);
+        more.setContentDescription("Sort, filter and refresh files");
+        LinearLayout.LayoutParams mp=new LinearLayout.LayoutParams(dp(48),dp(46));
+        mp.leftMargin=dp(7);top.addView(more,mp);
+
+        space(root,8);
+        breadcrumb=text("Downloads / Edo",12,ACCENT,true);root.addView(breadcrumb);
+        space(root,9);
+
+        search=new EditText(this);search.setSingleLine(true);
+        search.setHint("Search files and folders");
+        search.setTextColor(WHITE);search.setHintTextColor(MUTED);search.setTextSize(14);
+        search.setPadding(dp(12),dp(8),dp(12),dp(8));
+        search.setBackground(background(PANEL,BORDER));search.setVisibility(View.GONE);
+        root.addView(search,new LinearLayout.LayoutParams(-1,dp(43)));
+        search.addTextChangedListener(new TextWatcher(){
+            public void beforeTextChanged(CharSequence value,int start,int count,int after){}
+            public void onTextChanged(CharSequence value,int start,int before,int count){
+                query=value.toString().trim();pageSize=100;render();
+            }
+            public void afterTextChanged(Editable value){}
+        });
+
+        // No permanent sort bar, 'All' chips or oversized empty header.
         listContainer=column();root.addView(listContainer);
-        setContentView(sc);
+        setContentView(browserScroll);
+    }
+    private void showBrowserMenu(){
+        String[] menu={"Sort  ·  "+SORTS[sort],"Filter  ·  "+categoryFilter,"↻  Refresh","Clear filters"};
+        new AlertDialog.Builder(this).setTitle("File browser").setItems(menu,(dialog,which)->{
+            if(which==0)new AlertDialog.Builder(this).setTitle("Sort files")
+                .setSingleChoiceItems(SORTS,sort,(d,choice)->{
+                    sort=choice;pageSize=100;render();d.dismiss();
+                }).setNegativeButton("Cancel",null).show();
+            else if(which==1){
+                int selected=0;
+                for(int i=0;i<FILTERS.length;i++)if(FILTERS[i].equals(categoryFilter)){selected=i;break;}
+                new AlertDialog.Builder(this).setTitle("Show file types")
+                    .setSingleChoiceItems(FILTERS,selected,(d,choice)->{
+                        categoryFilter=FILTERS[choice];pageSize=100;render();d.dismiss();
+                    }).setNegativeButton("Cancel",null).show();
+            }else if(which==2)reload();
+            else {sort=0;categoryFilter="All";query="";search.setText("");
+                search.setVisibility(View.GONE);pageSize=100;render();}
+        }).setNegativeButton("Close",null).show();
     }
     private void reload(){
         try{
@@ -145,7 +184,7 @@ public final class ReceivedFilesActivity extends Activity {
     private void render(){
         if(listContainer==null)return;
         breadcrumb.setText("Downloads / Edo"+(folder.isEmpty()?"":" / "+folder.replace("/"," / ")));
-        sortButton.setText("Sort: "+new String[]{"Recent","Name","Size","Type"}[sort]);
+        initialFileFocus=null;initialFolderFocus=null;
         listContainer.removeAllViews();
         if(!folder.isEmpty())addRow("↰  Parent folder","Go up one level",()->navigate(parent(folder)),null);
         List<String> dirs=new ArrayList<>();Set<String> seen=new HashSet<>();
@@ -172,16 +211,23 @@ public final class ReceivedFilesActivity extends Activity {
         if(sort==1)matches.sort(Comparator.comparing(e->e.name.toLowerCase(Locale.ROOT)));
         if(sort==2)matches.sort((a,b)->Long.compare(b.size,a.size));
         if(sort==3)matches.sort(Comparator.comparing((LanServer.Entry e)->category(e)).thenComparing(e->e.name.toLowerCase(Locale.ROOT)));
-        summary.setText(dirs.size()+" folder(s)  •  "+matches.size()+" file(s)"+(query.isEmpty()?"":" matching search"));
+        summary.setText(matches.size()+" files  ·  "+dirs.size()+" folders"+(categoryFilter.equals("All")?"":"  ·  "+categoryFilter));
         if(dirs.isEmpty()&&matches.isEmpty())addEmpty();
         for(String d:dirs){String name=folder.isEmpty()?d:folder+"/"+d;
             addRow("▸  "+d,"Folder",()->navigate(name),null);
+            if(initialFolderFocus==null)initialFolderFocus=lastRowFocus;
         }
         int visible=Math.min(matches.size(),pageSize);
         for(int i=0;i<visible;i++){
             LanServer.Entry e=matches.get(i);String kind=category(e);
             String detail=kind+"  •  "+formatSize(e.size)+(query.isEmpty()?"":"  •  "+(e.folder.isEmpty()?"Top level":e.folder));
             addRow(icon(kind)+"  "+e.name,detail,()->openFile(e),()->options(e));
+            if(initialFileFocus==null)initialFileFocus=lastRowFocus;
+        }
+        if(focusFilesOnLoad){
+            focusFilesOnLoad=false;
+            View target=initialFileFocus!=null?initialFileFocus:initialFolderFocus;
+            if(target!=null)target.post(target::requestFocus);
         }
         if(matches.size()>visible){
             addRow("Show more files…",(matches.size()-visible)+" remaining",()->{pageSize+=100;render();},null);
@@ -196,7 +242,7 @@ public final class ReceivedFilesActivity extends Activity {
     }
     private void addRow(String title,String details,Runnable onClick,Runnable more){
         LinearLayout row=new LinearLayout(this);row.setOrientation(LinearLayout.HORIZONTAL);row.setGravity(Gravity.CENTER_VERTICAL);
-        row.setPadding(dp(11),dp(8),dp(10),dp(8));row.setBackground(background(PANEL,BORDER));
+        row.setPadding(dp(11),dp(5),dp(8),dp(5));row.setBackground(background(PANEL,BORDER));
         LinearLayout detailsView=column();TextView name=text(title,15,WHITE,true);name.setMaxLines(2);
         detailsView.addView(name);space(detailsView,3);detailsView.addView(text(details,12,MUTED,false));
         detailsView.setFocusable(true);detailsView.setClickable(true);
@@ -205,10 +251,14 @@ public final class ReceivedFilesActivity extends Activity {
             name.setTextColor(focused?ACCENT:WHITE);row.setBackground(background(focused?BORDER:PANEL,focused?ACCENT:BORDER));
         });
         detailsView.setOnClickListener(v->onClick.run());
+        lastRowFocus=detailsView;
         detailsView.setOnLongClickListener(v->{if(more!=null){more.run();return true;}return false;});
         row.addView(detailsView,new LinearLayout.LayoutParams(0,-2,1));
-        if(more!=null){TextView menu=button("⋮  Options",more);LinearLayout.LayoutParams p=new LinearLayout.LayoutParams(-2,-2);p.leftMargin=dp(10);row.addView(menu,p);}
-        listContainer.addView(row);space(listContainer,5);
+        if(more!=null){TextView menu=button("⋮",more);menu.setTextSize(20);
+            menu.setContentDescription("Actions for "+title);
+            LinearLayout.LayoutParams p=new LinearLayout.LayoutParams(dp(44),dp(46));
+            p.leftMargin=dp(8);row.addView(menu,p);}
+        listContainer.addView(row);space(listContainer,4);
     }
     private Uri uriFor(LanServer.Entry e){
         // IDs are obtained from AndroidFiles.list(), not arbitrary user input.
@@ -333,6 +383,7 @@ public final class ReceivedFilesActivity extends Activity {
     }
     @Override public void onBackPressed(){
         if(!query.isEmpty()){search.setText("");query="";hideKeyboard();render();return;}
+        if(search.getVisibility()==View.VISIBLE){search.setVisibility(View.GONE);hideKeyboard();return;}
         if(!folder.isEmpty()){navigate(parent(folder));return;}
         super.onBackPressed();
     }
