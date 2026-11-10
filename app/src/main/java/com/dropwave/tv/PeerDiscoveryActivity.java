@@ -12,6 +12,13 @@ import java.util.*;
 
 /** Native remote-friendly peer picker; requires the other Edo server to be on the same LAN. */
 public final class PeerDiscoveryActivity extends Activity {
+    private static final int BG=Color.rgb(16,21,26), PANEL=Color.rgb(25,33,39);
+    private static final int BORDER=Color.rgb(52,67,75), WHITE=Color.rgb(242,246,247);
+    private int dp(float v){return (int)(v*getResources().getDisplayMetrics().density+0.5f);}
+    private android.graphics.drawable.GradientDrawable surface(int fill,int border){
+        android.graphics.drawable.GradientDrawable d=new android.graphics.drawable.GradientDrawable();
+        d.setColor(fill);d.setCornerRadius(dp(11));d.setStroke(dp(1),border);return d;
+    }
     private NsdManager nsd;
     private NsdManager.DiscoveryListener discovery;
     private LinearLayout list;
@@ -19,14 +26,21 @@ public final class PeerDiscoveryActivity extends Activity {
     private final Set<String> shown=new HashSet<>();
     private String fileId;
     @Override public void onCreate(Bundle b){super.onCreate(b);fileId=getIntent().getStringExtra("fileId");
-        ScrollView scroll=new ScrollView(this);scroll.setBackgroundColor(Color.rgb(8,22,29));
-        list=new LinearLayout(this);list.setOrientation(1);list.setPadding(28,28,28,28);scroll.addView(list);
-        title("Nearby Edo devices");title("The receiver must have Edo sharing enabled on the same network.");
+        ScrollView scroll=new ScrollView(this);scroll.setBackgroundColor(BG);
+        list=new LinearLayout(this);list.setOrientation(1);list.setPadding(dp(24),dp(19),dp(24),dp(24));scroll.addView(list);
+        title("Nearby devices");subtitle("Send to another Edo host on the same Wi-Fi.");
         button("Enter address manually",()->manual(null));button("Refresh nearby devices",this::restart);
         setContentView(scroll);restart();
     }
-    private void title(String s){TextView t=new TextView(this);t.setText(s);t.setTextColor(Color.WHITE);t.setTextSize(20);t.setPadding(12,10,12,10);list.addView(t);}
-    private void button(String label,Runnable action){Button b=new Button(this);b.setText(label);b.setAllCaps(false);b.setFocusable(true);b.setOnClickListener(v->action.run());list.addView(b);}
+    private void title(String s){TextView t=new TextView(this);t.setText(s);t.setTextColor(WHITE);t.setTextSize(26);t.setPadding(dp(4),dp(8),dp(4),dp(8));list.addView(t);}
+    private void subtitle(String s){TextView t=new TextView(this);t.setText(s);t.setTextColor(Color.rgb(172,190,199));t.setTextSize(14);t.setPadding(dp(4),dp(2),dp(4),dp(13));list.addView(t);}
+    private void button(String label,Runnable action){
+        Button b=new Button(this);b.setText(label);b.setAllCaps(false);b.setFocusable(true);b.setTextSize(16);b.setTextColor(WHITE);
+        b.setPadding(dp(13),dp(11),dp(13),dp(11));b.setBackground(surface(PANEL,BORDER));
+        LinearLayout.LayoutParams lp=new LinearLayout.LayoutParams(-1,-2);lp.setMargins(0,0,0,dp(7));list.addView(b,lp);
+        b.setOnFocusChangeListener((v,focus)->{b.setBackground(surface(focus?WHITE:PANEL,focus?WHITE:BORDER));b.setTextColor(focus?BG:WHITE);});
+        b.setOnClickListener(v->action.run());
+    }
     private void restart(){stopDiscovery();shown.clear();try{
         nsd=(NsdManager)getSystemService(NSD_SERVICE);
         discovery=new NsdManager.DiscoveryListener(){
