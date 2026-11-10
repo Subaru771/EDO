@@ -134,7 +134,12 @@ public final class ReceivedFilesActivity extends Activity {
         setContentView(browserScroll);
     }
     private void showBrowserMenu(){
-        String[] menu={"Sort  ·  "+SORTS[sort],"Filter  ·  "+categoryFilter,"↻  Refresh","Clear filters"};
+        boolean hasLegacy=false;
+        for(LanServer.Entry entry:allFiles)
+            if("Legacy TV downloads".equals(entry.source)){hasLegacy=true;break;}
+        String[] menu=hasLegacy
+            ? new String[]{"Sort  ·  "+SORTS[sort],"Filter  ·  "+categoryFilter,"↻  Refresh","Clear filters","Move old downloads to Edo"}
+            : new String[]{"Sort  ·  "+SORTS[sort],"Filter  ·  "+categoryFilter,"↻  Refresh","Clear filters"};
         new AlertDialog.Builder(this).setTitle("File browser").setItems(menu,(dialog,which)->{
             if(which==0)new AlertDialog.Builder(this).setTitle("Sort files")
                 .setSingleChoiceItems(SORTS,sort,(d,choice)->{
@@ -148,9 +153,22 @@ public final class ReceivedFilesActivity extends Activity {
                         categoryFilter=FILTERS[choice];pageSize=100;render();d.dismiss();
                     }).setNegativeButton("Cancel",null).show();
             }else if(which==2)reload();
-            else {sort=0;categoryFilter="All";query="";search.setText("");
+            else if(which==3){sort=0;categoryFilter="All";query="";search.setText("");
                 search.setVisibility(View.GONE);pageSize=100;render();}
+            else moveLegacyDownloads();
         }).setNegativeButton("Close",null).show();
+    }
+    /** Only shown for detected legacy files. Leave files untouched when Android denies a move. */
+    private void moveLegacyDownloads(){
+        new Thread(()->{
+            AndroidFiles storage=new AndroidFiles(getApplicationContext());
+            int moved=storage.migrateLegacyDownloads();
+            runOnUiThread(()->{
+                reload();
+                toast(moved>0 ? moved+" old download(s) moved to Download/Edo" :
+                    "Android could not move the old downloads. They remain in their original folder.");
+            });
+        },"edo-legacy-migrate-user").start();
     }
     private void reload(){
         try{

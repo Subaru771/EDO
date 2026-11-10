@@ -17,8 +17,8 @@ android {
         // This Play release targets Android TV only. API 34 complies with the
         // Android TV exception to the 2026 target-level requirement.
         targetSdk 34
-        versionCode 59
-        versionName '1.0.2'
+        versionCode 60
+        versionName '1.0.3'
     }
     compileOptions { sourceCompatibility JavaVersion.VERSION_17; targetCompatibility JavaVersion.VERSION_17 }
     signingConfigs {
