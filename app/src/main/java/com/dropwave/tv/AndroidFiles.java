@@ -14,8 +14,8 @@ import java.util.*;
 
 /** Saves new files into Downloads/Edo while retaining access to previous DropWave downloads. */
 public final class AndroidFiles implements LanServer.Repository {
-    private static final String FOLDER=Environment.DIRECTORY_DOWNLOADS+"/Edo/";
-    private static final String LEGACY_FOLDER=Environment.DIRECTORY_DOWNLOADS+"/DropWave/";
+    private static final String FOLDER=EdoDownloadPaths.root(Environment.DIRECTORY_DOWNLOADS);
+    private static final String LEGACY_FOLDER=EdoDownloadPaths.legacyRoot(Environment.DIRECTORY_DOWNLOADS);
     private static final String PREF="shared_uris";
     private static final String FOLDERS="folders";
     private final Context ctx;
@@ -160,6 +160,16 @@ public final class AndroidFiles implements LanServer.Repository {
         while(existing.contains(candidate.toLowerCase(Locale.ROOT))){candidate=stem+" ("+(n++)+")"+extension;}
         return candidate;
     }
+    /** Fail loudly rather than report a successful download in the wrong folder. */
+    private void verifyEdoPath(Uri uri,String intended)throws IOException {
+        try(Cursor cursor=resolver.query(uri,new String[]{MediaStore.MediaColumns.RELATIVE_PATH},null,null,null)){
+            if(cursor==null||!cursor.moveToFirst()||cursor.isNull(0))
+                throw new IOException("Unable to verify where Android stored the download");
+            String actual=cursor.getString(0);
+            if(!EdoDownloadPaths.matches(actual,intended))
+                throw new IOException("Android saved the file in "+actual+" instead of "+intended);
+        }
+    }
     @Override public synchronized LanServer.Entry upload(String filename,InputStream body,long length) throws Exception {
         return uploadTo(filename,"",body,length);
     }
@@ -167,10 +177,11 @@ public final class AndroidFiles implements LanServer.Repository {
         if(!LanServer.validFolder(folder))throw new IllegalArgumentException("Invalid folder");
         Set<String> names=new HashSet<>();for(LanServer.Entry e:list())if(e.folder.equals(folder))names.add(e.name.toLowerCase(Locale.ROOT));
         String name=uniqueName(filename,names);
+        String intended=EdoDownloadPaths.destination(Environment.DIRECTORY_DOWNLOADS,folder);
         ContentValues values=new ContentValues();
         values.put(MediaStore.MediaColumns.DISPLAY_NAME,name);
         values.put(MediaStore.MediaColumns.MIME_TYPE,mime(name,null));
-        values.put(MediaStore.MediaColumns.RELATIVE_PATH,FOLDER+(folder.isEmpty()?"":folder+"/"));
+        values.put(MediaStore.MediaColumns.RELATIVE_PATH,intended);
         values.put(MediaStore.MediaColumns.IS_PENDING,1);
         Uri uri=resolver.insert(MediaStore.Downloads.EXTERNAL_CONTENT_URI,values);
         if(uri==null)throw new IOException("Could not create file. Check available storage.");
@@ -181,7 +192,8 @@ public final class AndroidFiles implements LanServer.Repository {
                 LanServer.copyExactly(body,dst,length);
             }
             ContentValues finished=new ContentValues();finished.put(MediaStore.MediaColumns.IS_PENDING,0);
-            resolver.update(uri,finished,null,null);
+            if(resolver.update(uri,finished,null,null)!=1)throw new IOException("Could not finalize the Edo download");
+            verifyEdoPath(uri,intended);
             complete=true;
             return new LanServer.Entry("m"+android.content.ContentUris.parseId(uri),name,length,mime(name,null),"TV downloads",folder);
         }finally{if(!complete)resolver.delete(uri,null,null);}
@@ -224,16 +236,22 @@ public final class AndroidFiles implements LanServer.Repository {
     }
     @Override public synchronized void move(String id,String folder)throws Exception {
         if(!LanServer.validFolder(folder))throw new IllegalArgumentException("Invalid folder");
-        Uri uri=mediaUri(id);ContentValues values=new ContentValues();values.put(MediaStore.MediaColumns.RELATIVE_PATH,FOLDER+(folder.isEmpty()?"":folder+"/"));
+        Uri uri=mediaUri(id);
+        String intended=EdoDownloadPaths.destination(Environment.DIRECTORY_DOWNLOADS,folder);
+        ContentValues values=new ContentValues();values.put(MediaStore.MediaColumns.RELATIVE_PATH,intended);
         if(resolver.update(uri,values,null,null)!=1)throw new IOException("Move failed");
+        verifyEdoPath(uri,intended);
     }
     @Override public synchronized void moveTo(String id,String folder,String name)throws Exception {
         if(!LanServer.validFolder(folder)||!name.equals(LanServer.cleanName(name)))throw new IllegalArgumentException("Invalid destination");
         for(LanServer.Entry e:list())if(e.folder.equals(folder)&&e.name.equalsIgnoreCase(name))throw new java.nio.file.FileAlreadyExistsException(name);
-        Uri uri=mediaUri(id);ContentValues values=new ContentValues();
+        Uri uri=mediaUri(id);
+        String intended=EdoDownloadPaths.destination(Environment.DIRECTORY_DOWNLOADS,folder);
+        ContentValues values=new ContentValues();
         values.put(MediaStore.MediaColumns.DISPLAY_NAME,name);
-        values.put(MediaStore.MediaColumns.RELATIVE_PATH,FOLDER+(folder.isEmpty()?"":folder+"/"));
+        values.put(MediaStore.MediaColumns.RELATIVE_PATH,intended);
         if(resolver.update(uri,values,null,null)!=1)throw new IOException("Move failed");
+        verifyEdoPath(uri,intended);
     }
     @Override public synchronized LanServer.Entry copy(String id,String folder)throws Exception {
         if(!LanServer.validFolder(folder))throw new IllegalArgumentException("Invalid folder");
