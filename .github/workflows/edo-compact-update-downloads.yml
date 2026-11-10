@@ -1,0 +1,130 @@
+name: Edo • Compact v1.0.2 downloads
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - .github/workflows/edo-compact-update-downloads.yml
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  verify:
+    name: Desktop regression tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+      - name: Compile desktop
+        run: bash desktop/build.sh
+      - name: Test backup, WebDAV and transfers
+        run: bash scripts/test-all.sh
+
+  android:
+    name: Build Android TV test APK
+    needs: verify
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: android-actions/setup-android@v4
+        with:
+          packages: 'platform-tools'
+      - name: Install Android SDK 35
+        run: sdkmanager --install "platforms;android-35" "build-tools;35.0.0"
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.9'
+      - name: Build debug APK (production signing secrets unavailable)
+        run: gradle :app:assembleDebug --no-daemon
+      - name: Verify Android test version
+        run: |
+          set -euo pipefail
+          APK=app/build/outputs/apk/debug/app-debug.apk
+          "$ANDROID_HOME/build-tools/35.0.0/apksigner" verify --verbose "$APK"
+          "$ANDROID_HOME/build-tools/35.0.0/aapt" dump badging "$APK" | grep -q "versionName='1.0.2'"
+          "$ANDROID_HOME/build-tools/35.0.0/aapt" dump badging "$APK" | grep -q "versionCode='59'"
+          mkdir -p downloads
+          cp "$APK" downloads/Edo-v1.0.2-Android-TV-DEBUG.apk
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Edo-v1.0.2-DEBUG-Android-TV
+          path: downloads/Edo-v1.0.2-Android-TV-DEBUG.apk
+          retention-days: 3
+          if-no-files-found: error
+
+  windows:
+    name: Build Windows portable EXE
+    needs: verify
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+      - name: Compile desktop
+        shell: bash
+        run: bash desktop/build.sh
+      - name: Bundle Java runtime and executable
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Path desktop/installers -Force | Out-Null
+          jpackage --type app-image --name Edo --app-version 1.0.2 --vendor Edo --description 'Edo local file transfer' --input desktop/dist --main-jar Edo-Desktop.jar --main-class com.dropwave.desktop.DesktopMain --icon desktop/resources/edo-icon.ico --dest desktop/installers
+          if ($LASTEXITCODE -ne 0) { throw 'jpackage failed' }
+          if (-not (Test-Path desktop/installers/Edo/Edo.exe)) { throw 'Edo.exe is missing' }
+          Compress-Archive -Path desktop/installers/Edo -DestinationPath Edo-v1.0.2-Windows-Portable.zip -CompressionLevel Optimal -Force
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Edo-v1.0.2-Windows-Portable
+          path: Edo-v1.0.2-Windows-Portable.zip
+          retention-days: 3
+          if-no-files-found: error
+
+  publish:
+    name: Publish clearly labeled test downloads
+    needs: [android, windows]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: Edo-v1.0.2-DEBUG-Android-TV
+          path: downloads
+      - uses: actions/download-artifact@v4
+        with:
+          name: Edo-v1.0.2-Windows-Portable
+          path: downloads
+      - name: Publish preview (debug APK; not an in-place update)
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          test -s downloads/Edo-v1.0.2-Android-TV-DEBUG.apk
+          test -s downloads/Edo-v1.0.2-Windows-Portable.zip
+          (cd downloads && sha256sum Edo-v1.0.2-Android-TV-DEBUG.apk Edo-v1.0.2-Windows-Portable.zip > SHA256SUMS.txt)
+          cat > /tmp/edo-notes.md <<'NOTES'
+          Edo v1.0.2 compact preview combines the redesigned Windows, TV, and browser interfaces with the merged backup and WebDAV fixes.
+
+          - Compact two-column TV dashboard, denser Windows UI, and simplified browser/mobile layout.
+          - TV downloads now use Downloads/Edo with non-destructive legacy visibility/migration.
+          - Backups no longer silently stop after 2,000 files.
+          - WebDAV cross-folder moves use the final requested filename.
+          - Windows portable ZIP bundles Java; extract it and run Edo/Edo.exe.
+
+          **IMPORTANT: The Android APK is DEBUG-SIGNED, not an update for the existing signed v1.0 APK.** GitHub has no EDO production signing credentials. Android will reject installing it over the signed v1.0 app. Testing requires a separate device or uninstalling v1.0 first, which may delete app settings/data. Back up important data before uninstalling. Do not distribute this test APK as a production update.
+
+          Automated tests and Android compilation passed; physical TV installation and end-to-end QA remain unverified. Windows EXE is unsigned.
+          NOTES
+          if gh release view v1.0.2 --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            echo "::error::Release v1.0.2 already exists. Refusing to overwrite existing downloads."
+            exit 1
+          fi
+          gh release create v1.0.2 downloads/Edo-v1.0.2-Android-TV-DEBUG.apk downloads/Edo-v1.0.2-Windows-Portable.zip downloads/SHA256SUMS.txt --target "$GITHUB_SHA" --title 'Edo v1.0.2 — Test builds (debug APK)' --notes-file /tmp/edo-notes.md --prerelease --repo "$GITHUB_REPOSITORY"
