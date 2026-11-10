@@ -52,3 +52,4 @@ else:
 PY
 
 python3 scripts/verify-brand-assets.py
+python3 scripts/verify-edo-regressions.py
