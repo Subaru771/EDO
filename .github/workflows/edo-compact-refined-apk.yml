@@ -4,6 +4,7 @@ on:
     branches: [main]
     paths:
       - app/src/main/assets/index.html
+      - app/src/main/java/com/dropwave/tv/MainActivity.java
       - .github/workflows/edo-compact-refined-apk.yml
   workflow_dispatch:
 permissions:
