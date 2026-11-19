@@ -15,8 +15,8 @@ import java.util.*;
 /** Native, D-pad-friendly Google TV dashboard. */
 public final class MainActivity extends Activity {
     // TV-friendly variation of Edo's mint / midnight design language.
-    private static final int BG=Color.rgb(16,21,26), PANEL=Color.rgb(25,33,39), BORDER=Color.rgb(52,67,75);
-    private static final int WHITE=Color.rgb(242,246,247), MUTED=Color.rgb(172,190,199), LIME=Color.rgb(163,229,192);
+    private static final int BG=Color.rgb(15,20,25), PANEL=Color.rgb(24,31,37), BORDER=Color.rgb(48,63,69);
+    private static final int WHITE=Color.rgb(240,245,244), MUTED=Color.rgb(163,181,185), LIME=Color.rgb(158,228,191);
     private TextView status,url,pin,count,activity,files,transportLabel;
     private ImageView qr;
     private LinearLayout actions, pendingActions;
@@ -34,12 +34,12 @@ public final class MainActivity extends Activity {
     private LinearLayout.LayoutParams params(int w,int h){return new LinearLayout.LayoutParams(w<0?w:dp(w),h<0?h:dp(h));}
     private void gap(LinearLayout parent,int h){View v=new View(this);parent.addView(v,params(1,h));}
     private TextView action(String text,Runnable callback,boolean primary){
-        TextView b=label(text,16,primary?BG:WHITE,true);b.setGravity(Gravity.CENTER);
-        b.setPadding(dp(15),dp(11),dp(15),dp(11));b.setFocusable(true);b.setClickable(true);
-        b.setBackground(shape(primary?LIME:PANEL,primary?LIME:BORDER,11));
+        TextView b=label(text,15,primary?BG:WHITE,true);b.setGravity(Gravity.CENTER);
+        b.setPadding(dp(12),dp(8),dp(12),dp(8));b.setFocusable(true);b.setClickable(true);
+        b.setBackground(shape(primary?LIME:PANEL,primary?LIME:BORDER,9));
         b.setElevation(dp(0));
         b.setOnFocusChangeListener((v,focus)->{
-            b.setBackground(shape(focus?WHITE:(primary?LIME:PANEL),focus?WHITE:(primary?LIME:BORDER),11));
+            b.setBackground(shape(focus?WHITE:(primary?LIME:PANEL),focus?WHITE:(primary?LIME:BORDER),9));
             b.setTextColor(focus?BG:(primary?BG:WHITE));
             b.setScaleX(focus?1.015f:1);b.setScaleY(focus?1.015f:1);
             b.setElevation(dp(focus?3:0));
@@ -51,18 +51,18 @@ public final class MainActivity extends Activity {
         LinearLayout row=new LinearLayout(this);
         row.setOrientation(LinearLayout.HORIZONTAL);
         row.setGravity(Gravity.TOP);
-        first.setMinHeight(dp(48));first.setMaxLines(2);
+        first.setMinHeight(dp(42));first.setMaxLines(2);
         LinearLayout.LayoutParams firstParams=new LinearLayout.LayoutParams(0,-2,1f);
-        firstParams.setMargins(0,0,second==null?0:dp(6),0);
+        firstParams.setMargins(0,0,second==null?0:dp(8),0);
         row.addView(first,firstParams);
         if(second!=null){
-            second.setMinHeight(dp(48));second.setMaxLines(2);
+            second.setMinHeight(dp(42));second.setMaxLines(2);
             row.addView(second,new LinearLayout.LayoutParams(0,-2,1f));
         }else{
             row.addView(new View(this),new LinearLayout.LayoutParams(0,dp(1),1f));
         }
         parent.addView(row,new LinearLayout.LayoutParams(-1,-2));
-        gap(parent,7);
+        gap(parent,8);
     }
     @Override public void onCreate(Bundle b){super.onCreate(b);
         getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN|View.SYSTEM_UI_FLAG_LAYOUT_STABLE);
@@ -85,61 +85,53 @@ public final class MainActivity extends Activity {
     private void build(){
         if(liteMode){buildLite();return;}
         ScrollView scroll=new ScrollView(this);scroll.setFillViewport(true);scroll.setBackgroundColor(BG);
-        LinearLayout root=column();root.setPadding(dp(25),dp(19),dp(25),dp(22));scroll.addView(root);
+        LinearLayout root=column();root.setPadding(dp(22),dp(12),dp(22),dp(16));scroll.addView(root);
         LinearLayout heading=new LinearLayout(this);heading.setGravity(Gravity.CENTER_VERTICAL);root.addView(heading);
-        LinearLayout logoArea=new LinearLayout(this);logoArea.setGravity(Gravity.CENTER_VERTICAL);heading.addView(logoArea,new LinearLayout.LayoutParams(0,dp(42),1));ImageView brandMark=new ImageView(this);brandMark.setImageResource(R.drawable.edo_brandmark);brandMark.setContentDescription("Edo file transfer logo");brandMark.setScaleType(ImageView.ScaleType.FIT_CENTER);logoArea.addView(brandMark,params(34,34));TextView logo=label("edo.",25,WHITE,true);logo.setPadding(dp(9),0,0,0);logoArea.addView(logo);
-        status=label("●  STARTING",13,LIME,true);heading.addView(status);gap(root,11);
-        TextView brandLine=label("Connect & transfer",24,WHITE,true);root.addView(brandLine);gap(root,4);
-        TextView sub=label("Share with your phone or PC over the same Wi-Fi. No cloud needed.",15,MUTED,false);root.addView(sub);gap(root,17);
+        LinearLayout logoArea=new LinearLayout(this);logoArea.setGravity(Gravity.CENTER_VERTICAL);heading.addView(logoArea,new LinearLayout.LayoutParams(0,dp(34),1));ImageView brandMark=new ImageView(this);brandMark.setImageResource(R.drawable.edo_brandmark);brandMark.setContentDescription("Edo file transfer logo");brandMark.setScaleType(ImageView.ScaleType.FIT_CENTER);logoArea.addView(brandMark,params(27,27));TextView logo=label("edo.",22,WHITE,true);logo.setPadding(dp(9),0,0,0);logoArea.addView(logo);
+        status=label("●  STARTING",13,LIME,true);heading.addView(status);gap(root,7);
+        TextView brandLine=label("Connect & transfer",20,WHITE,true);root.addView(brandLine);gap(root,2);
+        TextView sub=label("Share securely on your local network · No cloud",12,MUTED,false);root.addView(sub);gap(root,11);
         boolean compact=getResources().getConfiguration().screenWidthDp<720;
         LinearLayout content=new LinearLayout(this);content.setOrientation(compact?LinearLayout.VERTICAL:LinearLayout.HORIZONTAL);root.addView(content);
-        LinearLayout left=column();left.setBackground(shape(PANEL,BORDER,15));left.setPadding(dp(19),dp(18),dp(19),dp(18));
-        LinearLayout.LayoutParams leftParams=compact?new LinearLayout.LayoutParams(-1,-2):new LinearLayout.LayoutParams(0,-2,1.15f);
-        leftParams.setMargins(0,0,compact?0:dp(12),compact?dp(12):0);content.addView(left,leftParams);
-        left.addView(label("CONNECT A DEVICE",12,LIME,true));gap(left,8);
-        url=label("Finding your local address…",23,WHITE,true);url.setSingleLine(true);url.setEllipsize(android.text.TextUtils.TruncateAt.END);left.addView(url);
-        gap(left,7);
-        transportLabel=label("Checking connection security…",13,MUTED,true);left.addView(transportLabel);
-        gap(left,14);
+        LinearLayout left=column();left.setBackground(shape(PANEL,BORDER,12));left.setPadding(dp(15),dp(13),dp(15),dp(13));
+        LinearLayout.LayoutParams leftParams=compact?new LinearLayout.LayoutParams(-1,-2):new LinearLayout.LayoutParams(0,-2,1.0f);
+        leftParams.setMargins(0,0,compact?0:dp(10),compact?dp(10):0);content.addView(left,leftParams);
+        left.addView(label("CONNECT A DEVICE",11,LIME,true));gap(left,6);
+        url=label("Finding your local address…",19,WHITE,true);url.setSingleLine(true);url.setEllipsize(android.text.TextUtils.TruncateAt.END);left.addView(url);
+        gap(left,4);
+        transportLabel=label("Checking connection security…",11,MUTED,false);left.addView(transportLabel);
+        gap(left,10);
         LinearLayout join=new LinearLayout(this);join.setGravity(Gravity.CENTER_VERTICAL);left.addView(join);
-        qr=new ImageView(this);qr.setScaleType(ImageView.ScaleType.FIT_CENTER);qr.setBackground(shape(Color.WHITE,Color.WHITE,10));qr.setPadding(dp(7),dp(7),dp(7),dp(7));join.addView(qr,params(compact?112:150,compact?112:150));
-        LinearLayout side=column();side.setPadding(dp(16),0,0,0);join.addView(side,new LinearLayout.LayoutParams(0,-2,1));
-        side.addView(label("SCAN WITH PHONE",12,LIME,true));gap(side,7);
-        side.addView(label("Scan the QR or open the address in a browser.",14,MUTED,false));gap(side,12);
-        side.addView(label("PAIRING PIN",12,MUTED,true));
-        pin=label("—— —— ——",32,LIME,true);pin.setLetterSpacing(0.12f);side.addView(pin);
-        gap(left,12);
-        left.addView(label("Keep Edo running while transferring.",13,MUTED,false));
+        qr=new ImageView(this);qr.setScaleType(ImageView.ScaleType.FIT_CENTER);qr.setBackground(shape(Color.WHITE,Color.WHITE,8));qr.setPadding(dp(6),dp(6),dp(6),dp(6));join.addView(qr,params(compact?104:122,compact?104:122));
+        LinearLayout side=column();side.setPadding(dp(12),0,0,0);join.addView(side,new LinearLayout.LayoutParams(0,-2,1));
+        side.addView(label("SCAN WITH PHONE",11,LIME,true));gap(side,4);
+        side.addView(label("Scan QR or type the address",12,MUTED,false));gap(side,8);
+        side.addView(label("PAIRING PIN",11,MUTED,true));
+        pin=label("—— —— ——",27,LIME,true);pin.setLetterSpacing(0.12f);side.addView(pin);
         gap(left,9);
-        left.addView(label("PAIRING REQUESTS",12,LIME,true));gap(left,9);
+        left.addView(label("Keep Edo open during transfers",11,MUTED,false));
+        gap(left,7);
+        left.addView(label("PAIRING REQUESTS",11,LIME,true));gap(left,5);
         pendingActions=column();left.addView(pendingActions);
 
-        LinearLayout right=column();right.setBackground(shape(PANEL,BORDER,15));right.setPadding(dp(18),dp(18),dp(18),dp(18));
-        content.addView(right,compact?new LinearLayout.LayoutParams(-1,-2):new LinearLayout.LayoutParams(0,-2,0.85f));
-        right.addView(label("FILES ON THIS TV",12,LIME,true));gap(right,8);
-        count=label("0 files shared",21,WHITE,true);right.addView(count);gap(right,5);
-        activity=label("No active transfers",13,MUTED,false);right.addView(activity);gap(right,9);
-        files=label("Your latest received files will appear here.",13,MUTED,false);files.setMaxLines(4);right.addView(files);gap(right,13);
+        LinearLayout right=column();right.setBackground(shape(PANEL,BORDER,12));right.setPadding(dp(15),dp(13),dp(15),dp(13));
+        content.addView(right,compact?new LinearLayout.LayoutParams(-1,-2):new LinearLayout.LayoutParams(0,-2,1.0f));
+        right.addView(label("FILES ON THIS TV",11,LIME,true));gap(right,5);
+        count=label("0 files shared",18,WHITE,true);right.addView(count);gap(right,3);
+        activity=label("No active transfers",12,MUTED,false);right.addView(activity);gap(right,5);
+        files=label("Received files appear here.",12,MUTED,false);files.setMaxLines(2);right.addView(files);gap(right,10);
         actions=column();right.addView(actions);
-        LinearLayout moreActions=column();moreActions.setVisibility(View.GONE);
-        final TextView moreToggle=action("＋  More actions",()->{
-            boolean open=moreActions.getVisibility()!=View.VISIBLE;
-            moreActions.setVisibility(open?View.VISIBLE:View.GONE);
-            if(open)moreActions.requestFocus();
-        },false);
-        // Primary TV tasks are immediately accessible: browse first, install APK second.
-        actionPair(actions,action("▣  Browse files",this::browseReceivedFiles,true),
+        // Focus-first TV dashboard: primary operations always visible; no redundant action menu.
+        actionPair(actions,action("▣  Browse",this::browseReceivedFiles,true),
             action("⬇  Install APK",this::installApk,false));
-        actionPair(actions,action("＋  Send a file",this::chooseFile,false),
-            action("▤  USB & storage",()->startActivity(new Intent(this,ExternalStorageActivity.class)),false));
-        actionPair(actions,moreToggle,null);
-        actions.addView(moreActions);
+        actionPair(actions,action("＋  Send file",this::chooseFile,false),
+            action("↻  Refresh",this::update,false));
         sharingToggle=action("■  Stop sharing",this::toggleSharing,false);
-        actionPair(moreActions,action("↻  Refresh files",this::update,false),sharingToggle);
-        gap(root,11);
-        final TextView securityToggle=action("⚙   Advanced settings & security",()->{},false);
-        root.addView(securityToggle);gap(root,13);
-        LinearLayout security=column();security.setBackground(shape(PANEL,BORDER,15));security.setPadding(dp(18),dp(17),dp(18),dp(17));root.addView(security);
+        actionPair(actions,sharingToggle,null);
+        gap(root,8);
+        final TextView securityToggle=action("⚙  Settings & security",()->{},false);
+        root.addView(securityToggle);gap(root,8);
+        LinearLayout security=column();security.setBackground(shape(PANEL,BORDER,12));security.setPadding(dp(14),dp(12),dp(14),dp(12));root.addView(security);
         security.setVisibility(View.GONE);
         securityToggle.setOnClickListener(v->{
             boolean open=security.getVisibility()!=View.VISIBLE;
@@ -170,8 +162,7 @@ public final class MainActivity extends Activity {
             action("♧  Certificate info",this::showCertificateInfo,false));
         gap(security,7);
         security.addView(label("Pairing requests appear next to the QR code above.",13,MUTED,false));
-        gap(root,16);
-        root.addView(label("Local Wi-Fi / Ethernet  •  Downloads / Edo  •  One TV, many devices",12,MUTED,false));
+        gap(root,7);
         setContentView(scroll);
     }
     private void showEncryptionGuide(){
