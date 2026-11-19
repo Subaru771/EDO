@@ -651,7 +651,7 @@ setInterval(()=>{if(document.hidden||!$('pairView').classList.contains('hide'))r
   };
   $('edoRefreshHome').addEventListener('click',()=>{const button=$('refreshTransfer');if(button)button.click();refresh()});
   $('edoInstallWeb').addEventListener('click',()=>{
-    const b=document.querySelector('[data-tab="files"]');if(b)b.click();
+    const b=document.querySelector('[data-goto="files"]');if(b)b.click();
     const filter=$('mediaFilter');if(filter){filter.value='APKs';filter.dispatchEvent(new Event('change'))}
     window.scrollTo({top:0,behavior:'smooth'});
   });
