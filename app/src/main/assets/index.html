@@ -629,9 +629,6 @@ setInterval(()=>{if(document.hidden||!$('pairView').classList.contains('hide'))r
   tabs.forEach(b=>b.addEventListener('click',sync));
   document.querySelectorAll('button[data-goto]').forEach(b=>b.addEventListener('click',sync));
   sync();
-})();
-</script>
-<script>
 /* Edo compact interface bridge: old transfer/file actions remain fully functional. */
 (function(){
   const $=id=>document.getElementById(id);
@@ -658,6 +655,8 @@ setInterval(()=>{if(document.hidden||!$('pairView').classList.contains('hide'))r
   $('edoShareHost').addEventListener('click',()=>alert('Start and stop sharing from the Edo app on the TV or desktop hosting these files. Web browsers cannot start a stopped host server.'));
   refresh();document.addEventListener('visibilitychange',()=>{if(!document.hidden)refresh()});
   setInterval(()=>{if(!document.hidden)refresh()},30000);
+})();
+
 })();
 </script>
 </body></html>
