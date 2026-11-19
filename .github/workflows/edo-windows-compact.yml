@@ -1,0 +1,40 @@
+name: Edo Windows Compact Portable
+on:
+  push:
+    branches: [main]
+    paths:
+      - app/src/main/assets/index.html
+      - desktop/**
+      - .github/workflows/edo-windows-compact.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  windows:
+    name: Build Windows EXE with bundled Java
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+      - name: Compile Edo desktop with current compact web UI
+        shell: bash
+        run: bash desktop/build.sh
+      - name: Package portable Windows application
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Path desktop/installers -Force | Out-Null
+          jpackage --type app-image --name Edo --app-version 1.0.4 --vendor Edo --description 'Edo local file transfer' --input desktop/dist --main-jar Edo-Desktop.jar --main-class com.dropwave.desktop.DesktopMain --icon desktop/resources/edo-icon.ico --dest desktop/installers
+          if ($LASTEXITCODE -ne 0) { throw 'jpackage failed' }
+          if (-not (Test-Path desktop/installers/Edo/Edo.exe)) { throw 'Edo.exe missing' }
+          Compress-Archive -Path desktop/installers/Edo -DestinationPath EDO-Windows-Compact-Portable.zip -CompressionLevel Optimal -Force
+      - uses: actions/upload-artifact@v4
+        with:
+          name: EDO-Windows-Compact-Portable
+          path: EDO-Windows-Compact-Portable.zip
+          retention-days: 14
+          if-no-files-found: error
