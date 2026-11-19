@@ -165,9 +165,28 @@ public final class MainActivity extends Activity {
             main.addView(option,new LinearLayout.LayoutParams(-1,-2));
             gap(main,12);
         }
+        LinearLayout utility=column();
+        utility.setBackground(shape(PANEL,BORDER,18));
+        utility.setPadding(dp(20),dp(15),dp(20),dp(15));
+        root.addView(utility,new LinearLayout.LayoutParams(-1,-2));
+        LinearLayout stateRow=new LinearLayout(this);
+        stateRow.setGravity(Gravity.CENTER_VERTICAL);
+        utility.addView(stateRow);
+        activity=label("No active transfers",13,LIME,true);
+        stateRow.addView(activity,new LinearLayout.LayoutParams(0,-2,1));
+        sharingToggle=action("Stop sharing",this::toggleSharing,false);
+        stateRow.addView(sharingToggle,params(148,48));
+        gap(utility,10);
+        count=label("Received files",12,MUTED,true);
+        utility.addView(count);
+        files=label("No recent files",13,WHITE,false);
+        files.setMaxLines(2);
+        utility.addView(files);
+        gap(utility,10);
+        utility.addView(action("↻  Refresh files",this::update,false));
         send.post(send::requestFocus);
         setContentView(scroll);
-        actions=null;count=null;activity=null;files=null;sharingToggle=null;approvalStatus=null;
+        actions=null;approvalStatus=null;
         shownLink="";shownPending="";
     }
     private void showEncryptionGuide(){
