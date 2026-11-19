@@ -51,7 +51,7 @@ jobs:
         run: gradle :app:assembleDebug --no-daemon
       # Upload only on demand, avoiding storage use on every push or PR.
       - name: Downloadable debug APK (manual builds only)
-        if: ${{ github.event_name == 'workflow_dispatch' }}
+        if: ${{ github.event_name == 'workflow_dispatch' || github.event_name == 'pull_request' }}
         uses: actions/upload-artifact@v4
         with:
           name: Edo-Android-TV-Debug
